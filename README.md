@@ -8,12 +8,12 @@ You will have to compile the sources using the golang tools.
 
 ##Usage
 
-###Retrieve messages for a list of stations (IATA or ICAO codes):
+**Retrieve messages for a list of stations (IATA or ICAO codes):**
 $ metar lhr jfk bru uudd
 
 
-###Find the ICAO/IATA airport code for an airport
+**Find the ICAO/IATA airport code for an airport**
 $ metar -s boston
 
-###Help screen:
+**Help screen:**
 $ metar -h
