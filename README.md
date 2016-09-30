@@ -22,4 +22,4 @@ You will have to compile the sources using the golang tools. Follow this [howto]
 ```$ metar -h```
 
 ##Credits
-These aviation weather messages are retrieved from http://aviationweather.org
+These aviation weather messages are retrieved from http://aviationweather.gov
