@@ -1,12 +1,12 @@
 # metar
 
-This Golang program fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
+This go program fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
 
 ##Installation
 
 You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started. The compilation is lightning fast and the [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) easy.
 
-You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I cross compiled.
+You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross compiled.
 
 ##Usage
 
