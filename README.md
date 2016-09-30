@@ -20,3 +20,6 @@ You will have to compile the sources using the golang tools. Follow this [howto]
 **Help screen:**
 
 ```$ metar -h```
+
+##Credits
+These aviation weather messages are retrieved from http://aviationweather.org
