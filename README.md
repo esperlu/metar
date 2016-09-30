@@ -1,6 +1,6 @@
 # metar
 
-This Golang program fetch the aviation METAR's and TAF's for a given list of airports.
+This Golang program fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
 
 ##Installation
 
