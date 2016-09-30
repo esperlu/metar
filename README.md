@@ -4,7 +4,7 @@ This Golang program gets the aviation METAR's and TAF's for a givel list of airp
 
 ##Installation
 
-You will have to compile the sources using golang tools.
+You will have to compile the sources using the golang tools.
 
 ##Usage
 
