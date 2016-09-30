@@ -32,7 +32,10 @@ At the end of the METAR's, the three values between brackets are the computed  `
 
 **Find the IATA/ICAO airport code for an airport**
 
-```$ metar -s boston```
+```
+$ metar -s munich
+$ metar -s "new york"
+```
 
 **Help screen:**
 

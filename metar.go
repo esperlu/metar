@@ -48,6 +48,10 @@ func main() {
 
 	/* If option -s search string in airport lines and exit */
 	if args[0] == "-s" {
+		if len(args[1:]) == 0 {
+			fmt.Printf("\n\tNo search pattern given. Quitting...\n\tTry metar -s munich\n\n")
+			os.Exit(1)
+		}
 		searchAirport(lines, args[1])
 		os.Exit(0)
 	}
@@ -265,7 +269,7 @@ func searchAirport(adFile []string, searchText string) {
 		}
 	}
 	if list != "" {
-		fmt.Println(list)
+		fmt.Println("\n" + list)
 	} else {
 		fmt.Println("\nNothing found\n")
 	}

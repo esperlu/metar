@@ -2,34 +2,35 @@ package myfunctions
 
 
 func InitVariables() (string, string)  {
-	
+
 	help := `
 	Usage:
-	
+
 	To fetch metar and tafs, use either ICAO or IATA codes (case insensitive)
 
 		$ metar bru ebci tls tlv LFPG edDH
-	
+
 	The output gives the latest 4 metars and the latest taf. For every metar,
 	the Wind Chill factor, Heat Factor and Relative Humidity are calculated.
-	
+
 	To search any airport based on its name instead of IATA/ICAO code, just free search using:
-	
+
 		$ metar -s Ushua
-	
+		$ metar -s "new york"
+
 	For help (this screen)
-	
+
 		$ metar -h
-	
+
 	Data retrieved from aviationweather.gov
-	
-	Coded in Go (Golang) from Google's new compiled system language created by 
+
+	Coded in Go (Golang) from Google's new compiled system language created by
 	Robert Pike, Ken Thomson (himself!) and  Robert Griesemer
 
 	Go rocks!
 
 `
-	
+
 	adlist :=`GKA;AYGA;Goroka;Papua New Guinea
 MAG;AYMD;Madang;Papua New Guinea
 HGU;AYMH;Mount Hagen;Papua New Guinea
@@ -5312,6 +5313,6 @@ DBN;KDBN;Dublin (W H Barron Field);United States
 PUK;NTGQ;Pukarua (Pukarua Airport);French Polynesia
 CVO;KCVO;Corvallis (Corvallis Muni);United States
 PXH;YPMH;Prominent Hill;Australia`
-	
+
 	return adlist, help
 }
