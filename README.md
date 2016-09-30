@@ -13,7 +13,8 @@ You can also use the [binaries](https://github.com/esperlu/metar/tree/master/bin
 **Retrieve messages for a list of stations (IATA or ICAO codes):**
 
 ```$ metar lhr jfk bru uudd```
-At the end of the METAR's, the three values between brackets, are computed to output the ```[ wind chill factor | heat factor | relative humidity % ]```
+
+At the end of the METAR's, the three values between brackets are the computed  ```[ wind chill factor | heat factor | relative humidity % ]```
 
 **Find the IATA/ICAO airport code for an airport**
 
