@@ -150,9 +150,9 @@ func main() {
 				fmt.Printf("%s [%.0f %.0f %.0f%%] \n", vv, wc, hf, rh)
 			}
 
-
 			// ... print the last 2 TAFS
-			for _, vv := range mTafs[v] {
+			for k, vv := range mTafs[v] {
+				if k == 2 {break}
 				fmt.Printf("%s\n", vv)
 			}
 
