@@ -1,10 +1,10 @@
 # metar
 
-This Golang program gets the aviation METAR's and TAF's for a givel list of airports.
+This Golang program fetch the aviation METAR's and TAF's for a given list of airports.
 
 ##Installation
 
-You will have to compile the sources using the golang tools.
+You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started.
 
 ##Usage
 
@@ -13,7 +13,7 @@ You will have to compile the sources using the golang tools.
 ```$ metar lhr jfk bru uudd```
 
 
-**Find the ICAO/IATA airport code for an airport**
+**Find the IATA/ICAO airport code for an airport**
 
 ```$ metar -s boston```
 
