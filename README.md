@@ -42,7 +42,7 @@ $ metar -s "new york"
 ```$ metar -h```
 
 ##Bug report
-Rough edges are not excluded. Please report any bugs.
+Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/issues) any bugs.
 
 ##Credits
 These aviation weather messages are retrieved from http://aviationweather.gov in real time.
