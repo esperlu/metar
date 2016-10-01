@@ -1,6 +1,6 @@
 // JL Lacroix 2016
 
-// metar is go program to fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
+// metar is a go program to fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
 //
 // Usage:
 // Retrieve messages for a list of stations (IATA or ICAO codes):
@@ -42,16 +42,16 @@ func main() {
 		mAirportIata3[lineSplit[0]] = lineSplit[1]
 	}
 
-	/* read args from command line (w/o program name) */
+	// read args from command line (w/o program name)
 	args := os.Args[1:]
 
-	/* If option -h or none --> help page */
+	// If option -h or none --> help page
 	if len(args) == 0 || args[0] == "-h" {
 		fmt.Println(Help)
 		os.Exit(0)
 	}
 
-	/* If option -s search string in airport lines and exit */
+	// If option -s search string in airport lines and exit
 	if args[0] == "-s" {
 		if len(args[1:]) == 0 {
 			fmt.Printf("\n\tNo search pattern given. Quitting...\n\tTry: metar -s munich\n\n")
@@ -61,7 +61,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	/* Otherwise parse airport list */
+	// Otherwise parse airport list
 	var sStations []string
 	for _, v := range args {
 		V := strings.ToUpper(v)
@@ -83,54 +83,55 @@ func main() {
 		}
 	}
 
-	/* if no station to process --> exit */
+	// if no station to process --> exit
 	if len(sStations) == 0 {
 		fmt.Println("\nNothing to fetch. Quitting...\n")
 		os.Exit(1)
 	}
 
-	/* prepare the stations string for the URL */
+	// prepare the stations string for the URL
 	stations := strings.Join(sStations, "%20")
 	urlFormat := "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s&hoursBeforeNow=%.1f&fields=raw_text&mostRecentForEachStation=false"
 
-	/* start goroutines and store result in chanels */
-	/* METARS */
+	// start goroutines and store result in chanels
+
+	// METARS
 	chanMetars := make(chan string)
 	url := fmt.Sprintf(urlFormat, "metars", stations, 2.0)
 	go Wget(url, 2, chanMetars)
 
-	/* TAFS */
+	// TAFS
 	chanTafs := make(chan string)
 	url = fmt.Sprintf(urlFormat, "tafs", stations, 0.5)
 	go Wget(url, 2, chanTafs)
 
-	/* Read chanels */
+	// Read chanels
 	metars := <-chanMetars
 	tafs := <-chanTafs
 
-	/* store every line in a slice and remove empty trailing element from slice
-	 due to trailing \n */
+	// store every line in a slice and remove empty trailing element from slice
+	// due to trailing \n
 	aM := strings.Split(metars, "\n")
 	aT := strings.Split(tafs, "\n")
 
 	aM = aM[:len(aM)-1]
 	aT = aT[:len(aT)-1]
 
-	/* initialize map for metars and tafs */
+	// initialize map for metars and tafs
 	mMetars := make(map[string][]string)
 	mTafs := make(map[string][]string)
 
-	/* add METARS. Skip the first 6 lines and remove trailings ,,, */
+	// add METARS. Skip the first 6 lines and remove trailing ,,,
 	for _, aVal := range aM[6:] {
 		msg := aVal[:strings.Index(aVal, ",")]
 		station := strings.Split(msg, " ")[0]
 		mMetars[station] = append(mMetars[station], msg)
 	}
 
-	/* add TAFS. Skip the first 6 lines and remove trailings ,,, */
+	// add TAFS. Skip the first 6 lines and remove trailing ,,,
 	for _, aVal := range aT[6:] {
 		msg := aVal[:strings.Index(aVal, ",")]
-		/* If msg doesn't start with "TAF" (US fmt). Prepend  msg with "TAF" */
+		// If msg doesn't start with "TAF" (US fmt). Prepend  msg with "TAF"
 		airportCodePos, tafHeader := 1, ""
 		if msg[:3] != "TAF" {
 			airportCodePos, tafHeader = 0, "TAF "
@@ -139,7 +140,7 @@ func main() {
 		mTafs[station] = append(mTafs[station], tafHeader + msg)
 	}
 
-	/* if no reports found for valid stations ... */
+	// if no reports found for valid stations ...
 	if len(mMetars) == 0 && len(mTafs) == 0 {
 		for _, v := range sStations {
 			fmt.Printf("\n%s %s\n", v, mAirportIcao4[v])
@@ -149,7 +150,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	/* final print */
+	// final print
 	for _, v := range sStations {
 		fmt.Printf("\n%s %s\n", v, mAirportIcao4[v])
 
@@ -229,7 +230,7 @@ func WindChillHeatFactorRelativeHumidity(metar string) (float64, float64, float6
 		w = w * 1.852
 	}
 
-	// calcul du wind chill (if within limits)
+	// Wind Chill (if within limits)
 	var wc float64
 	if (w < 5) || (tc > 10) {
 		wc = tc
@@ -237,11 +238,11 @@ func WindChillHeatFactorRelativeHumidity(metar string) (float64, float64, float6
 		wc = 13.2 + 0.6215*tc + (0.3965 * tc - 11.37) * math.Pow(w, 0.16)
 	}
 
-	// Relative humidity (rh)
+	// Relative Humidity (rh)
 	tf := tc*1.8 + 32
 	rh := 100 * math.Pow((112 - 0.1 * tc + dc) / (112 + 0.9 * tc), 8)
 
-	// Heat factor (if within limits)
+	// Heat Factor (if within limits)
 	var hf float64
 	if tc >= 27 && dc >= 12 && rh >= 40 {
 		const (
@@ -267,7 +268,7 @@ func WindChillHeatFactorRelativeHumidity(metar string) (float64, float64, float6
 
 }
 
-/* SearchAirport searches airport in airport data list */
+// SearchAirport searches airport in airport data list
 func SearchAirport(adFile []string, searchText string) {
 	list := ""
 	for _, line := range adFile {
