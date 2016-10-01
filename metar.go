@@ -87,7 +87,7 @@ func main() {
 	/* start goroutines and store result in chanels */
 	/* METARS */
 	chanMetars := make(chan string)
-	url := fmt.Sprintf(urlFormat, "metars", stations, 3.0)
+	url := fmt.Sprintf(urlFormat, "metars", stations, 2.0)
 	go wget(url, 2, chanMetars)
 
 	/* TAFS */
