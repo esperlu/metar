@@ -23,16 +23,12 @@ import (
 func main() {
 
 	/* Get init variables from pkg myfunctions */
-	AdList, Help := myfunctions.InitVariables()
-
-	/* Read  and parse AdList*/
-	lines := strings.Split(string(AdList), "\n")
-	/* delete last empty element from slice lines due to trailing \n */
+	adList, Help := myfunctions.InitVariables()
 
 	mAirportIcao4 := make(map[string]string)
 	mAirportIata3 := make(map[string]string)
-	for _, line := range lines {
-		lineSplit := strings.Split(line, ";")
+	for _, line := range adList {
+		lineSplit := strings.Split(string(line), ";")
 		mAirportIcao4[lineSplit[1]] = fmt.Sprintf("(%s) %s, %s", lineSplit[0], lineSplit[2], lineSplit[3])
 		mAirportIata3[lineSplit[0]] = lineSplit[1]
 	}
@@ -49,10 +45,10 @@ func main() {
 	/* If option -s search string in airport lines and exit */
 	if args[0] == "-s" {
 		if len(args[1:]) == 0 {
-			fmt.Printf("\n\tNo search pattern given. Quitting...\n\tTry metar -s munich\n\n")
+			fmt.Printf("\n\tNo search pattern given. Quitting...\n\tTry: metar -s munich\n\n")
 			os.Exit(1)
 		}
-		searchAirport(lines, args[1])
+		searchAirport(adList, args[1])
 		os.Exit(0)
 	}
 
@@ -103,30 +99,37 @@ func main() {
 	metars := <-chanMetars
 	tafs := <-chanTafs
 
-	/* store every line in a slice and remove empty element from slice end due to trailing \n */
+	/* store every line in a slice and remove empty trailing element from slice
+	 due to trailing \n */
 	aM := strings.Split(metars, "\n")
 	aT := strings.Split(tafs, "\n")
+
 	aM = aM[:len(aM)-1]
 	aT = aT[:len(aT)-1]
 
-	/* initialize map metar */
+	/* initialize map for metars and tafs */
 	mMetars := make(map[string][]string)
 	mTafs := make(map[string][]string)
 
-
-	/* skip the first 6 lines and remove trailings ,,,,,, */
+	/* add METARS. Skip the first 6 lines and remove trailings ,,, */
 	for _, aVal := range aM[6:] {
 		str := aVal[:strings.Index(aVal, ",")]
 		station := strings.Split(str, " ")[0]
 		mMetars[station] = append(mMetars[station], str)
 	}
 
-	/* add TAF  */
+	/* add TAFS. Skip the first 6 lines and remove trailings ,,, */
 	for _, aVal := range aT[6:] {
 		str := aVal[:strings.Index(aVal, ",")]
-		station := strings.Split(str, " ")[1]
-		mTafs[station] = append(mTafs[station], str)
-		//mTafs[station] = str
+		/* set airport code position: 1 for EU (msg starts with "TAF") and  0 in US.
+		Prepend US taf msg with "TAF" */
+		airportCodePos, tafHeader := 0, "TAF "
+		if strings.Index(str, "TAF") == 0 {
+			airportCodePos = 1
+			tafHeader = ""
+		}
+		station := strings.Split(str, " ")[airportCodePos]
+		mTafs[station] = append(mTafs[station], tafHeader + str)
 	}
 
 	/* if no reports found for valid stations ... */
