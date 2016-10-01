@@ -1,6 +1,6 @@
 # metar
 
-This go program fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode. Special care has been put into execution speed using the goroutines for simultaneous data retrievalof METAR's and TAF's.
+This go program fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode. Special care has been put into execution speed using the goroutines for simultaneous data retrieval of METAR's and TAF's.
 
 As an addition to the METAR messages, Wind Chill factor, Heat Factor and Relative Humidity are computed when applicable.
 
