@@ -1,8 +1,17 @@
-/*
- * JL 2016-09-20
- * JL 2016-09-30
- */
+// JL Lacroix 2016
 
+// metar is go program to fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
+//
+// Usage:
+// Retrieve messages for a list of stations (IATA or ICAO codes):
+//		$ metar lhr jfk bru uudd
+// Find the IATA/ICAO airport code for an airport
+//		$ metar -s munich
+//		$ metar -s "new york"
+// Help screen:
+//		$ metar -h
+// Bug reports:
+// https://github.com/esperlu/metar/issues
 package main
 
 import (
@@ -48,7 +57,7 @@ func main() {
 			fmt.Printf("\n\tNo search pattern given. Quitting...\n\tTry: metar -s munich\n\n")
 			os.Exit(1)
 		}
-		searchAirport(adList, args[1])
+		SearchAirport(adList, args[1])
 		os.Exit(0)
 	}
 
@@ -88,12 +97,12 @@ func main() {
 	/* METARS */
 	chanMetars := make(chan string)
 	url := fmt.Sprintf(urlFormat, "metars", stations, 2.0)
-	go wget(url, 2, chanMetars)
+	go Wget(url, 2, chanMetars)
 
 	/* TAFS */
 	chanTafs := make(chan string)
 	url = fmt.Sprintf(urlFormat, "tafs", stations, 0.5)
-	go wget(url, 2, chanTafs)
+	go Wget(url, 2, chanTafs)
 
 	/* Read chanels */
 	metars := <-chanMetars
@@ -113,23 +122,21 @@ func main() {
 
 	/* add METARS. Skip the first 6 lines and remove trailings ,,, */
 	for _, aVal := range aM[6:] {
-		str := aVal[:strings.Index(aVal, ",")]
-		station := strings.Split(str, " ")[0]
-		mMetars[station] = append(mMetars[station], str)
+		msg := aVal[:strings.Index(aVal, ",")]
+		station := strings.Split(msg, " ")[0]
+		mMetars[station] = append(mMetars[station], msg)
 	}
 
 	/* add TAFS. Skip the first 6 lines and remove trailings ,,, */
 	for _, aVal := range aT[6:] {
-		str := aVal[:strings.Index(aVal, ",")]
-		/* set airport code position: 1 for EU (msg starts with "TAF") and  0 in US.
-		Prepend US taf msg with "TAF" */
-		airportCodePos, tafHeader := 0, "TAF "
-		if strings.Index(str, "TAF") == 0 {
-			airportCodePos = 1
-			tafHeader = ""
+		msg := aVal[:strings.Index(aVal, ",")]
+		/* If msg doesn't start with "TAF" (US fmt). Prepend  msg with "TAF" */
+		airportCodePos, tafHeader := 1, ""
+		if msg[:3] != "TAF" {
+			airportCodePos, tafHeader = 0, "TAF "
 		}
-		station := strings.Split(str, " ")[airportCodePos]
-		mTafs[station] = append(mTafs[station], tafHeader + str)
+		station := strings.Split(msg, " ")[airportCodePos]
+		mTafs[station] = append(mTafs[station], tafHeader + msg)
 	}
 
 	/* if no reports found for valid stations ... */
@@ -170,12 +177,8 @@ func main() {
 
 }
 
-/*
- * Functions
- */
-
-/* HTTP get */
-func wget(url string, wgetTimeout time.Duration, ch chan<- string) {
+// Wget HTTP fetches URL content
+func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 	timeout := time.Duration(wgetTimeout * time.Second)
 	client := http.Client{
 		Timeout: timeout,
@@ -208,7 +211,8 @@ func wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 	ch <- fmt.Sprintf("%s", wgetAnswer)
 }
 
-/* Extract wind, temp and dew point to calculate wind chill & heat factors and relative humidity */
+// WindChillHeatFactorRelativeHumidity Extract wind, temp and dew point
+// to calculate wind chill & heat factors and relative humidity
 func WindChillHeatFactorRelativeHumidity(metar string) (float64, float64, float64) {
 
 	re := regexp.MustCompile("^.+([0-9]{2})(KT|MPS).+ (?:M)?([0-9]{2})/(?://|M)?([0-9]{2})")
@@ -263,8 +267,8 @@ func WindChillHeatFactorRelativeHumidity(metar string) (float64, float64, float6
 
 }
 
-/* Search airport in airport data list */
-func searchAirport(adFile []string, searchText string) {
+/* SearchAirport searches airport in airport data list */
+func SearchAirport(adFile []string, searchText string) {
 	list := ""
 	for _, line := range adFile {
 		if strings.Index(strings.ToUpper(line), strings.ToUpper(searchText)) >= 0 {

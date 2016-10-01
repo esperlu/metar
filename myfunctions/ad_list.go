@@ -1,6 +1,7 @@
+// various functions
 package myfunctions
 
-
+// InitVariables initialize variables help and adList
 func InitVariables() ([]string, string)  {
 
 	help := `
