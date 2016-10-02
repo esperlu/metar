@@ -50,6 +50,7 @@ Linux arm | [download](https://github.com/esperlu/metar/tree/master/binaries/lin
 Windows 64 | [download](https://github.com/esperlu/metar/tree/master/binaries/windows/amd64?raw=true)
 Mac (Darwin) 64 | [download](https://github.com/esperlu/metar/tree/master/binaries/darwin/amd64?raw=true)
 
+Linux and Mac users will have to make that file executable: `chmod +x metar`
 
 ##Bug report
 Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/issues) any bugs.
