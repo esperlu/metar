@@ -52,6 +52,8 @@ Mac (Darwin) 64 | [download](https://github.com/esperlu/metar/tree/master/binari
 
 Linux and Mac users will have to make that file executable: `chmod +x metar`
 
+To run it (Linux and Mac): `$ ./metar`
+
 ##Bug report
 Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/issues) any bugs.
 
