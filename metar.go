@@ -30,7 +30,7 @@ import (
 
 
 func main() {
-
+	startTotal := time.Now()
 	/* Get init variables from pkg myfunctions */
 	adList, Help := myfunctions.InitVariables()
 
@@ -95,7 +95,9 @@ func main() {
 
 	// start goroutines and store result in chanels
 
+
 	// METARS
+	startDownload := time.Now()
 	chanMetars := make(chan string)
 	url := fmt.Sprintf(urlFormat, "metars", stations, 2.0)
 	go Wget(url, 2, chanMetars)
@@ -108,6 +110,7 @@ func main() {
 	// Read chanels
 	metars := <-chanMetars
 	tafs := <-chanTafs
+	downloadTime := time.Since(startDownload)
 
 	// store every line in a slice and remove empty trailing element from slice
 	// due to trailing \n
@@ -174,9 +177,18 @@ func main() {
 		}
 	}
 
-	fmt.Println("")
+	totalTime := time.Since(startTotal)
+	fmt.Printf("\nDownload:\t%s\nProcessing:\t%s\nTotal time:\t%s\n",
+		downloadTime,
+		totalTime - downloadTime,
+		totalTime,
+	)
 
 }
+
+
+// Functions
+
 
 // Wget HTTP fetches URL content
 func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
