@@ -4,19 +4,6 @@ This go program fetch the aviation METAR's and TAF's for a given list of airport
 
 As an addition to the METAR messages, Wind Chill factor, Heat Factor and Relative Humidity are computed when applicable.
 
-##Installation
-
-You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started. The compilation is lightning fast and the [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) easy.
-
-You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross-compiled for your convenience.
-
-Architecture | link
------------- | -------------
-Linux amd64 | [download](https://github.com/esperlu/metar/tree/master/binaries/linux/amd64?raw=true)
-Linux arm | [download](https://github.com/esperlu/metar/tree/master/binaries/linux/arm?raw=true)
-Windows 64 | [download](https://github.com/esperlu/metar/tree/master/binaries/windows/amd64?raw=true)
-Mac (Darwin) 64 | [download](https://github.com/esperlu/metar/tree/master/binaries/darwin/amd64?raw=true)
-
 ##Usage
 
 **Retrieve messages for a list of stations (IATA or ICAO codes):**
@@ -49,6 +36,20 @@ $ metar -s "new york"
 **Help screen:**
 
 ```$ metar -h```
+
+##Installation
+
+You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started. The compilation is lightning fast and the [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) easy.
+
+You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross-compiled for your convenience.
+
+Architecture | link
+------------ | -------------
+Linux amd64 | [download](https://github.com/esperlu/metar/tree/master/binaries/linux/amd64?raw=true)
+Linux arm | [download](https://github.com/esperlu/metar/tree/master/binaries/linux/arm?raw=true)
+Windows 64 | [download](https://github.com/esperlu/metar/tree/master/binaries/windows/amd64?raw=true)
+Mac (Darwin) 64 | [download](https://github.com/esperlu/metar/tree/master/binaries/darwin/amd64?raw=true)
+
 
 ##Bug report
 Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/issues) any bugs.
