@@ -43,12 +43,12 @@ You will have to compile the sources using the golang tools. Follow this [howto]
 
 You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross-compiled for your convenience.
 
-Architecture | Direct link
+OS | Architecture | Direct link
 ------------ | -------------
-Linux amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/amd64/metar?raw=true)
-Linux arm | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm/metar?raw=true)
-Mac (Darwin) 64 | [download](https://github.com/esperlu/metar/blob/master/binaries/darwin/amd64/metar?raw=true)
-Windows 64 | [download](https://github.com/esperlu/metar/blob/master/binaries/windows/amd64/metar.exe?raw=true)
+Linux | amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/amd64/metar?raw=true)
+Linux | arm | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm/metar?raw=true)
+Darwin (OS X) | amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/darwin/amd64/metar?raw=true)
+Windows | amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/windows/amd64/metar.exe?raw=true)
 
 Linux and Mac users will have to make that file executable: `$ chmod +x metar`
 
