@@ -177,12 +177,13 @@ func main() {
 		}
 	}
 
+	// print timing
 	totalTime := time.Since(startTotal)
-	fmt.Printf("\nDownload:\t%s\nProcessing:\t%s\nTotal time:\t%s\n",
-		downloadTime,
-		totalTime - downloadTime,
-		totalTime,
+	fmt.Printf("\nDownloaded in:\t%7.3f sec.\nProcessed in:\t%7.3f sec.\n",
+		float64(downloadTime)/1e9,
+		float64(totalTime - downloadTime)/1e9,
 	)
+
 
 }
 
@@ -205,11 +206,11 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 		case strings.Index(sErr, "no such host") != -1 :
 			sErr = "Host not found (Internet connected?)"
 		case strings.Index(sErr, "Timeout")  != -1 :
-			//log.Fatal(fmt.Errorf("Timeout"))
 			sErr = fmt.Sprintf("Timeout (%s): no response received from host. Retry later.", timeout)
 		}
 		log.Fatal(fmt.Errorf(sErr))
 	}
+
 	// if not HTTP 200 OK in response header
 	if res.Status != "200 OK" {
 		log.Fatal(fmt.Errorf("Page not found"))
@@ -225,7 +226,7 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 }
 
 // WindChillHeatFactorRelativeHumidity Extract wind, temp and dew point
-// to calculate wind chill & heat factors and relative humidity
+// to calculate wind chill, heat factors and relative humidity
 func WindChillHeatFactorRelativeHumidity(metar string) (float64, float64, float64) {
 
 	re := regexp.MustCompile("^.+([0-9]{2})(KT|MPS).+ (?:M)?([0-9]{2})/(?://|M)?([0-9]{2})")
@@ -235,7 +236,7 @@ func WindChillHeatFactorRelativeHumidity(metar string) (float64, float64, float6
 	tc, _ := strconv.ParseFloat(re.FindStringSubmatch(metar)[3], 64)
 	dc, _ := strconv.ParseFloat(re.FindStringSubmatch(metar)[4], 64)
 
-	// conversion en km/h
+	// conversion KT, MPS -> KMH
 	if wUnit == "MPS" {
 		w = w * 3.6
 	} else {
