@@ -43,7 +43,7 @@ You will have to compile the sources using the golang tools. Follow this [howto]
 
 You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross-compiled for your convenience.
 
-Architecture | link
+Architecture | Direct link
 ------------ | -------------
 Linux amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/amd64/metar?raw=true)
 Linux arm | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm/metar?raw=true)
