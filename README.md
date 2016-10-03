@@ -47,8 +47,8 @@ Architecture | link
 ------------ | -------------
 Linux amd64 | [download](https://github.com/esperlu/metar/tree/master/binaries/linux/amd64/metar?raw=true)
 Linux arm | [download](https://github.com/esperlu/metar/tree/master/binaries/linux/arm/metar?raw=true)
-Windows 64 | [download](https://github.com/esperlu/metar/tree/master/binaries/windows/amd64/metar?raw=true)
 Mac (Darwin) 64 | [download](https://github.com/esperlu/metar/blob/master/binaries/darwin/amd64/metar?raw=true)
+Windows 64 | [download](https://github.com/esperlu/metar/tree/master/binaries/windows/amd64/metar.exe?raw=true)
 
 Linux and Mac users will have to make that file executable: `$ chmod +x metar`
 
