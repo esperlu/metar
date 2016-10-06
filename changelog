@@ -1,8 +1,8 @@
+ 2016-10-06
+ * Code clean up and optimization
+
 2016-09-30
  * Output in the same order than arguments
  * added http error handeling (timeout, http errors)
  * two tafs latest instead of latest one (trend)
  * Correction of various bugs and code optimization
-
- 2016-10-06
- * Code clean up and optimization
