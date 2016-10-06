@@ -5,10 +5,8 @@ package myfunctions
 func InitVariables() ([]string, string)  {
 
 	help := `
-	Usage:
-
+Usage:
 	To fetch metar and tafs, use either ICAO or IATA codes (case insensitive)
-
 		$ metar bru ebci tls tlv LFPG edDH
 
 	The output gives the latest 4 metars and the latest tafs. For every metar,
@@ -23,11 +21,14 @@ func InitVariables() ([]string, string)  {
 
 		$ metar -h
 
+References:
+	GitHub: https://github.com/esperlu/metar
+
+Credit:
 	Data retrieved from aviationweather.gov in real time.
 
 	Coded in Go (Golang) from Google's new compiled system language created by
-	Robert Pike, Ken Thomson (himself!) and  Robert Griesemer
-
+	Robert Griesemer, Rob Pike, and Ken Thomson (himself!)  
 
 `
 

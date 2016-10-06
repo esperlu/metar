@@ -28,7 +28,6 @@ import (
 	"time"
 )
 
-
 func main() {
 	startTotal := time.Now()
 	/* Get init variables from pkg myfunctions */
@@ -65,27 +64,29 @@ func main() {
 	var sStations []string
 	for _, v := range args {
 		V := strings.ToUpper(v)
+		fmtPrintf := "\n\t\"%s\" not found. Try to run: metar -s %[1]s\n"
+		if strings.Contains(v, " ") {fmtPrintf = "\n\t\"%s\" not found. Try to run: metar -s \"%[1]s\"\n"}
 		switch len(V) {
 		case 3:
 			if _, ok := mAirportIata3[V]; ok {
 				sStations = append(sStations, mAirportIata3[V])
 			} else {
-				fmt.Printf("\n%s not found. Try to run: metar -s %s\n", V, V)
+				fmt.Printf(fmtPrintf, v)
 			}
 		case 4:
 			if _, ok := mAirportIcao4[V]; ok {
 				sStations = append(sStations, V)
 			} else {
-				fmt.Printf("\n%s not found. Try to run: metar -s %s\n", V, V)
+				fmt.Printf(fmtPrintf, v)
 			}
 		default:
-			fmt.Printf("\n%s not found. Try to run: metar -s %s\n", V, V)
+				fmt.Printf(fmtPrintf, v)
 		}
 	}
 
 	// if no station to process --> exit
 	if len(sStations) == 0 {
-		fmt.Println("\nNothing to fetch. Quitting...\n")
+		fmt.Println("\n\tNothing to fetch. Quitting...\n")
 		os.Exit(1)
 	}
 
@@ -94,7 +95,6 @@ func main() {
 	urlFormat := "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s&hoursBeforeNow=%.1f&fields=raw_text&mostRecentForEachStation=false"
 
 	// start goroutines and store result in chanels
-
 
 	// METARS
 	startDownload := time.Now()
@@ -140,7 +140,7 @@ func main() {
 			airportCodePos, tafHeader = 0, "TAF "
 		}
 		station := strings.Split(msg, " ")[airportCodePos]
-		mTafs[station] = append(mTafs[station], tafHeader + msg)
+		mTafs[station] = append(mTafs[station], tafHeader+msg)
 	}
 
 	// if no reports found for valid stations ...
@@ -161,7 +161,7 @@ func main() {
 		if len(mMetars[v]) == 0 && len(mTafs[v]) == 0 {
 			fmt.Println("No reports for this station")
 
-		// else print all METARS and ...
+			// else print all METARS and ...
 		} else {
 			for _, vv := range mMetars[v] {
 				wc, hf, rh := WindChillHeatFactorRelativeHumidity(vv)
@@ -170,7 +170,9 @@ func main() {
 
 			// ... print the last 2 TAFS
 			for k, vv := range mTafs[v] {
-				if k == 2 {break}
+				if k == 2 {
+					break
+				}
 				fmt.Printf("%s\n", vv)
 			}
 
@@ -181,15 +183,12 @@ func main() {
 	totalTime := time.Since(startTotal)
 	fmt.Printf("\nDownloaded in:\t%7.3f sec.\nProcessed in:\t%7.3f sec.\n",
 		float64(downloadTime)/1e9,
-		float64(totalTime - downloadTime)/1e9,
+		float64(totalTime-downloadTime)/1e9,
 	)
-
 
 }
 
-
 // Functions
-
 
 // Wget HTTP fetches URL content
 func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
@@ -201,19 +200,23 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 	// Get page and check for error (timeout, http ...)
 	res, err := client.Get(url)
 	if err != nil {
-		sErr := err.Error()
-		switch {
-		case strings.Index(sErr, "no such host") != -1 :
-			sErr = "Host not found (Internet connected?)"
-		case strings.Index(sErr, "Timeout")  != -1 :
-			sErr = fmt.Sprintf("Timeout (%s): no response received from host. Retry later.", timeout)
-		}
-		log.Fatal(fmt.Errorf(sErr))
+		log.Fatal(
+			fmt.Errorf(
+				"\n\n\t%s\n\t%s\n\n",
+				"No response could be received from the weather server.",
+				"Check you internet connection or try again later.",
+			),
+		)
 	}
 
 	// if not HTTP 200 OK in response header
-	if res.Status != "200 OK" {
-		log.Fatal(fmt.Errorf("Page not found"))
+	if res.StatusCode != http.StatusOK {
+		log.Fatal(
+			fmt.Errorf(
+				"\n\n\t%s\n\n",
+				"Page not found",
+			),
+		)
 	}
 
 	wgetAnswer, err := ioutil.ReadAll(res.Body)
@@ -248,12 +251,12 @@ func WindChillHeatFactorRelativeHumidity(metar string) (float64, float64, float6
 	if (w < 5) || (tc > 10) {
 		wc = tc
 	} else {
-		wc = 13.2 + 0.6215*tc + (0.3965 * tc - 11.37) * math.Pow(w, 0.16)
+		wc = 13.2 + 0.6215*tc + (0.3965*tc-11.37)*math.Pow(w, 0.16)
 	}
 
 	// Relative Humidity (rh)
 	tf := tc*1.8 + 32
-	rh := 100 * math.Pow((112 - 0.1 * tc + dc) / (112 + 0.9 * tc), 8)
+	rh := 100 * math.Pow((112-0.1*tc+dc)/(112+0.9*tc), 8)
 
 	// Heat Factor (if within limits)
 	var hf float64
