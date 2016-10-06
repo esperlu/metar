@@ -206,7 +206,7 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 			fmt.Errorf(
 				"\n\n\t%s\n\t%s\n\n",
 				"No response could be received from the weather server.",
-				"Check you internet connection or try again later.",
+				"Check your internet connection or try again later.",
 			),
 		)
 	}
