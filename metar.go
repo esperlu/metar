@@ -65,7 +65,9 @@ func main() {
 	for _, v := range args {
 		V := strings.ToUpper(v)
 		fmtPrintf := "\n\t\"%s\" not found. Try to run: metar -s %[1]s\n"
-		if strings.Contains(v, " ") {fmtPrintf = "\n\t\"%s\" not found. Try to run: metar -s \"%[1]s\"\n"}
+		if strings.Contains(v, " ") {
+			fmtPrintf = "\n\t\"%s\" not found. Try to run: metar -s \"%[1]s\"\n"
+		}
 		switch len(V) {
 		case 3:
 			if _, ok := mAirportIata3[V]; ok {
@@ -80,7 +82,7 @@ func main() {
 				fmt.Printf(fmtPrintf, v)
 			}
 		default:
-				fmt.Printf(fmtPrintf, v)
+			fmt.Printf(fmtPrintf, v)
 		}
 	}
 
