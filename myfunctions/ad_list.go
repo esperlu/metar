@@ -7,12 +7,13 @@ func InitVariables() ([]string, string)  {
 	help := `
 Usage:
 	To fetch metar and tafs, use either ICAO or IATA codes (case insensitive)
+
 		$ metar bru ebci tls tlv LFPG edDH
 
 	The output gives the latest 4 metars and the latest tafs. For every metar,
 	the Wind Chill factor, Heat Factor and Relative Humidity are calculated.
 
-	To search any airport based on its name instead of IATA/ICAO code, just free search using:
+	To lookup the ICAO or IATA code for an airport:
 
 		$ metar -s Ushua
 		$ metar -s "new york"
@@ -28,9 +29,9 @@ Credit:
 	Data retrieved from aviationweather.gov in real time.
 
 	Coded in Go (Golang) from Google's new compiled system language created by
-	Robert Griesemer, Rob Pike, and Ken Thomson (himself!)  
+	Robert Griesemer, Rob Pike, and Ken Thomson (himself!)
 
-`
+` + string(0xA9) + " Jean-Luc Lacroix 2016\n"
 
 adList := []string{
 "GKA;AYGA;Goroka;Papua New Guinea",
@@ -4226,7 +4227,6 @@ adList := []string{
 "UNT;EGPW;Unst (Unst Airport);United Kingdom",
 "PVC;KPVC;Provincetown (Provincetown Muni);United States",
 "LKE;KW55;Seattle (Kenmore Air Harbor Seaplane Base);United States",
-"%u0;%u04;Nazran (Magas);Russia",
 "SBH;TFFJ;Gustavia (Saint Barthelemy);France",
 "SUI;UGSS;Sukhumi (Sukhumi Dranda);Georgia",
 "TBW;UUOT;Tambow;Russia",

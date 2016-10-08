@@ -33,12 +33,13 @@ func main() {
 	/* Get init variables from pkg myfunctions */
 	adList, Help := myfunctions.InitVariables()
 
+	// Construct two maps [iata]=>(icao) and [icao]=>(airport_details)
 	mAirportIcao4 := make(map[string]string)
 	mAirportIata3 := make(map[string]string)
 	for _, line := range adList {
 		lineSplit := strings.Split(string(line), ";")
-		mAirportIcao4[lineSplit[1]] = fmt.Sprintf("(%s) %s, %s", lineSplit[0], lineSplit[2], lineSplit[3])
 		mAirportIata3[lineSplit[0]] = lineSplit[1]
+		mAirportIcao4[lineSplit[1]] = fmt.Sprintf("(%s) %s, %s", lineSplit[0], lineSplit[2], lineSplit[3])
 	}
 
 	// read args from command line (w/o program name)
@@ -101,7 +102,7 @@ func main() {
 	// METARS
 	startDownload := time.Now()
 	chanMetars := make(chan string)
-	url := fmt.Sprintf(urlFormat, "metars", stations, 2.0)
+	url := fmt.Sprintf(urlFormat, "metars", stations, 3.0)
 	go Wget(url, 2, chanMetars)
 
 	// TAFS
@@ -183,11 +184,10 @@ func main() {
 
 	// print timing
 	totalTime := time.Since(startTotal)
-	fmt.Printf("\nDownloaded in:\t%7.3f sec.\nProcessed in:\t%7.3f sec.\n",
+	fmt.Printf("\nDownloaded in: %.3f sec. | Processed in: %.3f sec.\n",
 		float64(downloadTime)/1e9,
 		float64(totalTime-downloadTime)/1e9,
 	)
-
 }
 
 // Functions
