@@ -1,4 +1,9 @@
- 2016-10-06
+2016-10-19
+* added raw output option
+* added option for min/max number of metars
+* Various optimisation and bug correction
+
+2016-10-06
  * Code clean up and optimization
 
 2016-09-30
