@@ -198,7 +198,7 @@ func main() {
 			dew, _ := strconv.ParseFloat(fields[6], 64)
 			wind, _ := strconv.ParseFloat(fields[8], 64)
 			m = Metar{Raw: raw, Id: id, Temp: temp, Dew: dew, Wind: wind}
-			if *rawFlagBool {
+			if !*rawFlagBool {
 				wc, hf, rh := Factors(wind, temp, dew)
 				factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
 			}
