@@ -23,11 +23,13 @@ import (
 	"metar/data"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
+
+// Typical URL:
+// http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=csv&stationString=LSGG&hoursBeforeNow=4
 
 const (
 	baseUrl  = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
@@ -58,7 +60,7 @@ func main() {
 	// parse the command line options
 	searchFlagBool := flag.Bool("s", false, "Search IATA/ICAO code for an airport")
 	rawFlagBool := flag.Bool("r", false, "Print raw data w/o the additional factors")
-	numberFlagStr := flag.String("n", "4", "Set number of Metars to print per station. N 1 to 10.")
+	numberFlagStr := flag.String("n", "4", "Set number of Metars to print per station. N 1 to 30.")
 
 	var Usage = func() {
 		fmt.Println(Help)
@@ -72,19 +74,15 @@ func main() {
 	}
 
 	// validate flag numberFlagStr. Format int[,.]int
-	re := regexp.MustCompile("^(10|[1-9])$")
-	aMatches := re.FindStringSubmatch(*numberFlagStr)
-	if len(aMatches) == 0 {
+	maxNbrMetars, _ := strconv.Atoi(*numberFlagStr)
+	if maxNbrMetars <= 0 || maxNbrMetars > 30 {
 		fmt.Printf(
 			"\n\t%s\n\t%s\n\n",
 			"Invalid value for option -n.",
-			"Minimum 1, maximum 10",
+			"Minimum 1, maximum 30",
 		)
 		os.Exit(1)
 	}
-
-	// assign values to maxNbrMetars & maxNbrTafs
-	maxNbrMetars, _ := strconv.Atoi(aMatches[1])
 
 	// Search ICAO/IATA airport code
 	if *searchFlagBool && len(flag.Args()) == 0 {
@@ -153,6 +151,7 @@ func main() {
 	startDownload := time.Now()
 	chanMetars := make(chan string)
 	url := fmt.Sprintf(urlMetar, "metars", stationList, maxNbrMetars)
+
 	go Wget(url, 2, chanMetars)
 
 	// TAFS
@@ -297,6 +296,7 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 
 	// send outpput to ch (after removing trailing \n)
 	ch <- fmt.Sprintf("%s", wgetAnswer[:len(wgetAnswer)-1])
+
 }
 
 // WindChillHeatFactorRelativeHumidity Extract wind, temp and dew point
