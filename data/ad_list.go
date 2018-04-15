@@ -837,6 +837,7 @@ func InitVariables() ([]string, string) {
 		"CSK;GOGS;Cap Skiring;Senegal",
 		"KLC;GOOK;Kaolack;Senegal",
 		"DKR;GOOY;Dakar (Leopold Sedar Senghor Intl);Senegal",
+		"DSS;GOBD;Dakar (Blaise-Diagne Intl);Senegal",
 		"XLS;GOSS;St. Louis (Saint Louis);Senegal",
 		"BXE;GOTB;Bakel;Senegal",
 		"KGG;GOTK;Kedougou;Senegal",
