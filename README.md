@@ -44,7 +44,7 @@ Example:   ```$ metar -r -n 5 bru jfk``` prints the latest 5 metars in raw forma
 
 ```$ metar -h```
 
-##Installation
+## Installation
 
 You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started. The compilation is lightning fast and the [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) easy.
 
@@ -61,8 +61,8 @@ Linux and Mac users will have to make that file executable: `$ chmod +x metar`
 
 To run it (Linux and Mac): `$ ./metar`
 
-##Bug report
+## Bug report
 Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/issues) any bugs.
 
-##Credits
+## Credits
 These aviation weather messages are retrieved from http://aviationweather.gov in real time.
