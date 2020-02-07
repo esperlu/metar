@@ -958,6 +958,7 @@ func InitVariables() ([]string, string) {
 		"OZP;LEMO;Sevilla (Moron Ab);Spain",
 		"PNA;LEPP;Pamplona;Spain",
 		"REU;LERS;Reus;Spain",
+		"ROZ;LERT;Naval Station Rota;Spain"
 		"SLM;LESA;Salamanca;Spain",
 		"EAS;LESO;San Sebastian;Spain",
 		"SCQ;LEST;Santiago;Spain",
