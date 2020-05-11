@@ -298,7 +298,7 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 
 }
 
-// WindChillHeatFactorRelativeHumidity Extract wind, temp and dew point
+// Factors: WindChill HeatFactor Relative Humidity - Extract wind, temp and dew point
 // to calculate wind chill, heat factors and relative humidity
 func Factors(wind float64, temp float64, dew float64) (float64, float64, float64) {
 
