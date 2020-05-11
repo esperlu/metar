@@ -151,7 +151,6 @@ func main() {
 	startDownload := time.Now()
 	chanMetars := make(chan string)
 	url := fmt.Sprintf(urlMetar, "metars", stationList, maxNbrMetars)
-
 	go Wget(url, 2, chanMetars)
 
 	// TAFS
