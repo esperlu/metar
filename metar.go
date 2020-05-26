@@ -13,10 +13,10 @@
 package main
 
 import (
+	"./data"
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"jeanluc/metar/data"
 	"log"
 	"math"
 	"net/http"
