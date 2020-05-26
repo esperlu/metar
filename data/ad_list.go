@@ -42,10 +42,8 @@ Examples:
     GitHub: https://github.com/esperlu/metar
 
   Credit:
-    Data retrieved from aviationweather.gov in real time.
-
-  Coded in Go (Golang) from Google's new compiled system language created by
-  Robert Griesemer, Rob Pike, and Ken Thomson.
+    Weather data: aviationweather.gov in real time.
+  	Go language: Google (Robert Griesemer, Rob Pike, and Ken Thomson)
 
 ` + string(0xA9) + " Jean-Luc Lacroix 2016\n"
 )
