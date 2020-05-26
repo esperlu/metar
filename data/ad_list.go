@@ -50,6 +50,7 @@ Examples:
 ` + string(0xA9) + " Jean-Luc Lacroix 2016\n"
 )
 
+// InitVariables Load airport id's and names in slice
 func InitVariables() ([]string, string) {
 
 	adList := []string{
@@ -958,7 +959,7 @@ func InitVariables() ([]string, string) {
 		"OZP;LEMO;Sevilla (Moron Ab);Spain",
 		"PNA;LEPP;Pamplona;Spain",
 		"REU;LERS;Reus;Spain",
-		"ROZ;LERT;Naval Station Rota;Spain"
+		"ROZ;LERT;Naval Station Rota;Spain",
 		"SLM;LESA;Salamanca;Spain",
 		"EAS;LESO;San Sebastian;Spain",
 		"SCQ;LEST;Santiago;Spain",

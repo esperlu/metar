@@ -1,5 +1,3 @@
-// JL Lacroix 2016
-
 // metar is a go program to fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
 //
 // Usage:
@@ -18,9 +16,9 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"jeanluc/metar/data"
 	"log"
 	"math"
-	"metar/data"
 	"net/http"
 	"os"
 	"strconv"
@@ -32,23 +30,25 @@ import (
 // http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=csv&stationString=LSGG&hoursBeforeNow=4
 
 const (
-	baseUrl  = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
-	urlMetar = baseUrl + "&hoursBeforeNow=%d"
-	urlTaf   = baseUrl + "&hoursBeforeNow=%.1f&mostRecentForEachStation=postfilter"
+	baseURL  = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
+	urlMetar = baseURL + "&hoursBeforeNow=%d"
+	urlTaf   = baseURL + "&hoursBeforeNow=%.1f&mostRecentForEachStation=postfilter"
 )
 
+// Metar struct for METAR variables
 type Metar struct {
 	Raw  string
-	Id   string
+	ID   string
 	Temp float64
 	Dew  float64
 	Wind float64
 	Gust float64
 }
 
+// Taf struct for TAF variables
 type Taf struct {
 	Raw string
-	Id  string
+	ID  string
 }
 
 func main() {
@@ -139,7 +139,7 @@ func main() {
 
 	// if no station to process --> exit
 	if len(sStations) == 0 {
-		fmt.Println("\n\tNothing to fetch. Quitting...\n")
+		fmt.Print("\n\tNothing to fetch. Quitting...\n\n")
 		os.Exit(1)
 	}
 
@@ -190,18 +190,18 @@ func main() {
 		}
 		raw := fields[0]
 		if *rawFlagBool {
-			m = Metar{Raw: raw, Id: id}
+			m = Metar{Raw: raw, ID: id}
 		} else {
 			temp, _ := strconv.ParseFloat(fields[5], 64)
 			dew, _ := strconv.ParseFloat(fields[6], 64)
 			wind, _ := strconv.ParseFloat(fields[8], 64)
-			m = Metar{Raw: raw, Id: id, Temp: temp, Dew: dew, Wind: wind}
+			m = Metar{Raw: raw, ID: id, Temp: temp, Dew: dew, Wind: wind}
 			if !*rawFlagBool {
 				wc, hf, rh := Factors(wind, temp, dew)
 				factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
 			}
 		}
-		mMetars[m.Id] = append(mMetars[m.Id], m.Raw+factors)
+		mMetars[m.ID] = append(mMetars[m.ID], m.Raw+factors)
 	}
 
 	// add TAFS. Skip the first 6 lines and remove trailing ,,,
@@ -216,8 +216,8 @@ func main() {
 		if raw[:3] != "TAF" {
 			tafHeader = "TAF "
 		}
-		t := Taf{Id: id, Raw: raw}
-		mTafs[t.Id] = append(mTafs[t.Id], tafHeader+t.Raw)
+		t := Taf{ID: id, Raw: raw}
+		mTafs[t.ID] = append(mTafs[t.ID], tafHeader+t.Raw)
 	}
 
 	// final print
@@ -273,9 +273,9 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 	if err != nil {
 		log.Fatal(
 			fmt.Errorf(
-				"\n\n\t%s\n\t%s\n\n",
+				"\n\n\t%s\n\t%s",
 				"No response could be received from the weather server.",
-				"Check your internet connection or try again later.",
+				"Check your internet connection or try again later.\n\n",
 			),
 		)
 	}
@@ -284,7 +284,7 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 	// if not HTTP 200 OK in response header
 	if res.StatusCode != http.StatusOK {
 		log.Fatal(
-			fmt.Errorf("\n\n\t%s\n\n", "Page not found"),
+			fmt.Errorf("\n\n\t%s", "Page not found\n\n"),
 		)
 	}
 
@@ -298,7 +298,7 @@ func Wget(url string, wgetTimeout time.Duration, ch chan<- string) {
 
 }
 
-// Factors: WindChill HeatFactor Relative Humidity - Extract wind, temp and dew point
+// Factors WindChill HeatFactor Relative Humidity - Extract wind, temp and dew point
 // to calculate wind chill, heat factors and relative humidity
 func Factors(wind float64, temp float64, dew float64) (float64, float64, float64) {
 
@@ -354,6 +354,6 @@ func SearchAirport(adFile []string, searchText string) {
 	if list != "" {
 		fmt.Println("\n" + list)
 	} else {
-		fmt.Println("\nNothing found\n")
+		fmt.Print("\nNothing found\n")
 	}
 }
