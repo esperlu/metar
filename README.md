@@ -4,7 +4,6 @@ This go program fetch the aviation METAR's and TAF's for a given list of airport
 
 As an addition to the METAR messages, Wind Chill factor, Heat Factor and Relative Humidity are computed when applicable.
 
-##Usage
 
 **Retrieve messages for a list of stations (IATA or ICAO codes):**
 
