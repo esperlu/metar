@@ -61,6 +61,8 @@ Windows | 386 | [download](https://github.com/esperlu/metar/blob/master/binaries
 Windows | amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/windows/amd64/metar.exe?raw=true)
 
 
+Once downloaded Linux and Mac users will have to make that file executable: `$ chmod +x metar`
+
 To run it (Linux and Mac): `$ ./metar`
 
 ## Bug report
