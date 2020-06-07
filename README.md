@@ -70,3 +70,6 @@ Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/i
 
 ## Credits
 These aviation weather messages are retrieved from http://aviationweather.gov in real time.
+
+## Author
+Jean-Luc Lacroix
