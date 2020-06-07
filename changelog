@@ -1,3 +1,10 @@
+2020-06-07
+* added a couple of new stations
+* changed maximum number of METARs to 70
+* changed default timeout to 2 sec.
+* added option -t (timeout)
+* code optimization and clean up 
+
 2017-04-15
 * added new Dakar (Senegal) airport
 

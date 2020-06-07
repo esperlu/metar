@@ -28,16 +28,17 @@ At the end of the METAR's, the three values between brackets are the computed  `
 
 ```
 $ metar -s munich
-$ metar -s "new york"
+$ metar -s new york
 ```
 
 **Options**
 
 ```
--r    raw output (no airport header and no additional factors)
--n N  number of metar to print (min. 1, max. 10)
+-r      raw output (no airport header and no additional factors)
+-n <N>  number of metar to print (min. 1, max. 70)
+-t <T>  connection timeout in sec. (min.1 max 10)
 ```
-Example:   ```$ metar -r -n 5 bru jfk``` prints the latest 5 metars in raw format
+Example:   ```$ metar -r -n 15 bru jfk``` prints the latest 15 metars in raw format
 
 
 **Help screen:**
@@ -53,11 +54,13 @@ You can also use the [binaries](https://github.com/esperlu/metar/tree/master/bin
 OS | Architecture | Direct link
 ------------ | ----------- | -------------
 Linux | amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/amd64/metar?raw=true)
-Linux | arm | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm/metar?raw=true)
+Linux | arm V5 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm5/metar?raw=true)
+Linux | arm V6 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm6/metar?raw=true)
+Linux | arm V7 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm7/metar?raw=true)
 Darwin (OS X) | amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/darwin/amd64/metar?raw=true)
+Windows | 386 | [download](https://github.com/esperlu/metar/blob/master/binaries/windows/amd64/metar.exe?raw=true)
 Windows | amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/windows/amd64/metar.exe?raw=true)
 
-Linux and Mac users will have to make that file executable: `$ chmod +x metar`
 
 To run it (Linux and Mac): `$ ./metar`
 
