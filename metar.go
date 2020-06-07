@@ -5,7 +5,7 @@
 //		$ metar lhr jfk bru uudd
 // Find the IATA/ICAO airport code for an airport
 //		$ metar -s munich
-//		$ metar -s "new york"
+//		$ metar -s new york
 // Help screen:
 //		$ metar -h
 // Bug reports:
@@ -303,7 +303,7 @@ func main() {
 			fmt.Println("No TAF received for this station")
 		}
 	}
-	// print timing
+	// print timing (not for raw output)
 	if !*rawFlagBool {
 		totalTime := time.Since(startTotal).Seconds()
 		fmt.Printf("\nv2.1 | Download: %.3f sec. | Process: %.3f | Total: %.3f sec.\n",
@@ -326,7 +326,6 @@ func wget(url string, wgetTimeout int) string {
 	// Get page and check for error (timeout, http ...)
 	res, err := client.Get(url)
 	if err != nil {
-
 		if strings.Index(err.Error(), "Client.Timeout exceeded") > 0 {
 			errText := fmt.Sprintf("\n\n\tConnection timeout (%.0f sec.)\n\tCheck your internet connection,"+
 				" try again later\n\tor increase timeout with the -t option (in sec.)\n\n", timeout.Seconds())
