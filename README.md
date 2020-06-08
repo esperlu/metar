@@ -1,4 +1,4 @@
-# metar
+# metar (DEV BRANCH)
 
 This go program fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode. Special care has been put into execution speed using the goroutines for simultaneous data retrieval of METAR's and TAF's.
 
