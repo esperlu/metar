@@ -285,6 +285,7 @@ func main() {
 			fmt.Println("No TAF received for this station")
 		}
 	}
+
 	// print timing (not for raw output)
 	if !*rawFlagBool {
 		totalTime := time.Since(startTotal).Seconds()
