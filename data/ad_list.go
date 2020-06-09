@@ -2337,7 +2337,7 @@ func InitVariables() ([]string, string) {
 		"BNE;YBBN;Brisbane (Brisbane Intl);Australia",
 		"OOL;YBCG;Coolangatta (Gold Coast);Australia",
 		"CNS;YBCS;Cairns (Cairns Intl);Australia",
-		"CTL;YBCV;Charlieville (Charleville);Australia",
+		"CTL;YBCV;Charleville (Charleville);Australia",
 		"ISA;YBMA;Mount Isa;Australia",
 		"MCY;YBMC;Maroochydore (Sunshine Coast);Australia",
 		"MKY;YBMK;Mackay;Australia",

@@ -33,7 +33,7 @@ import (
 // Constants to fetch Weather reports from aviationweather.com
 const (
 	URL         = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
-	urlMETARfmt = URL + "&hoursBeforeNow=%d"
+	urlMETARfmt = URL + "&hoursBeforeNow=%.1f"
 	urlTAFfmt   = URL + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
@@ -48,7 +48,7 @@ func main() {
 	// parse the command line options
 	searchFlagBool := flag.Bool("s", false, "Search IATA/ICAO code for an airport")
 	rawFlagBool := flag.Bool("r", false, "Print raw data w/o the additional factors")
-	numberMetarFlagInt := flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
+	numberMetarFlagFloat := flag.Float64("n", 4.0, "Set number of Metars to print per station. N 1 to 30.")
 	timeoutFlagInt := flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
 
 	var Usage = func() {
@@ -74,7 +74,7 @@ func main() {
 	}
 
 	// validate number of reports (INT)
-	if *numberMetarFlagInt <= 0 || *numberMetarFlagInt > maxNbMETAR {
+	if *numberMetarFlagFloat <= 0 || *numberMetarFlagFloat > maxNbMETAR {
 		fmt.Printf(
 			"\n\t%s\n\t%s\n\n",
 			"Invalid value for option -n (number of METARS).",
@@ -148,8 +148,8 @@ func main() {
 	var wg sync.WaitGroup
 	var metars, tafs string
 
-	// get METARS
-	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, *numberMetarFlagInt)
+	// get METARS (arg[4]--> 2 METARS per hour + 30 minutes)
+	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, *numberMetarFlagFloat/2+0.5)
 	wg.Add(1)
 	go func(urlM string) {
 		metars = wget(urlM, *timeoutFlagInt)
@@ -182,20 +182,22 @@ func main() {
 
 		var factors string
 		var m string
+		var i float64
 
 		// Skip the first 6 lines
 		for _, aVal := range aM[6:] {
+
+			i++
+			// Stop the for loop if requested number of METAR si reached
+			if i > *numberMetarFlagFloat {
+				break
+			}
 
 			// Split fields
 			fields := strings.Split(aVal, ",")
 
 			// Store ICAO airport ID
 			id := fields[0][:4]
-
-			// Stop the for loop if maximum number of METAR si reached
-			if len(mMetars[id]) >= *numberMetarFlagInt {
-				break
-			}
 
 			raw := fields[0]
 			// If raw not requested, compute wind chill factor, heat factor and relative humidity
