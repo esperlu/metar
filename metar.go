@@ -113,6 +113,7 @@ func main() {
 	// search option
 	if *searchFlagBool {
 		fmt.Printf("\n%s\n", searchAirport(adList, strings.Join(flag.Args(), " ")))
+		fmt.Printf("\tFound in: %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
 
@@ -210,7 +211,7 @@ func main() {
 
 			// Stop the for loop if maximum number of METAR si reached
 			if len(mMetars[id]) >= *numberMetarFlagInt {
-				break
+				continue
 			}
 
 			raw := fields[0]

@@ -15,9 +15,10 @@ Synopsis:
 
 Options:
 
-  -n N Set number of Metars to print per station. N: 1 to 10
-  -r Print raw data w/o the additional factors
-  -s "STRING" Search IATA/ICAO code for an airport
+-n <N> Set number of Metars to print per station. N: 1 to 70
+-r Print raw data w/o the additional factors
+-s <STRING> Search IATA/ICAO code for an airport
+-t <T> connection timeout T: 1 to 10
 
 Examples:
 
@@ -30,6 +31,9 @@ Examples:
 
   Same but in raw output (no special factor, no airport headers)
     $ metar -r -n 10 tlv lhr
+
+  To increase the connection timeout (default: 2 sec.)
+    $ metar -t 5 -n 10 tlv lhr
 
   To lookup the ICAO or IATA code for an airport:
     $ metar -s Ushua
@@ -2337,7 +2341,7 @@ func InitVariables() ([]string, string) {
 		"BNE;YBBN;Brisbane (Brisbane Intl);Australia",
 		"OOL;YBCG;Coolangatta (Gold Coast);Australia",
 		"CNS;YBCS;Cairns (Cairns Intl);Australia",
-		"CTL;YBCV;Charlieville (Charleville);Australia",
+		"CTL;YBCV;Charleville (Charleville);Australia",
 		"ISA;YBMA;Mount Isa;Australia",
 		"MCY;YBMC;Maroochydore (Sunshine Coast);Australia",
 		"MKY;YBMK;Mackay;Australia",
