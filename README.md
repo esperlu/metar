@@ -55,7 +55,7 @@ If you don't want to compile it yourself, skip the points below and go the the [
 * Easy way: install the [latest version binaries](https://golang.org/dl/) or use your distro package (not always the latest version)
 * Less easy way: [compile Go from source](https://golang.org/doc/install/source)
 
-#### Get this metar repo
+### Get this metar repo
 
 1. `go get github.com/esperlu/metar` This will install this git repo in your GOPATH
 2. navigate to the now local sources `<GOPATH>/src/github.com/esperlu/metar`
@@ -78,7 +78,7 @@ Windows 32-bit| 386 | [download](https://github.com/esperlu/metar/blob/master/bi
 Windows 64-bit| amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/windows/amd64/metar.exe?raw=true)
 
 
-Once downloaded Linux and Mac users will have to make that file executable: `$ chmod +x metar`
+Once downloaded **Linux and Mac** users will have to make that file executable: `$ chmod +x metar`
 
 To run it (Linux and Mac): `$ ./metar`
 
