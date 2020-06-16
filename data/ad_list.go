@@ -40,14 +40,14 @@ Examples:
     $ metar -s "new york"
 
   For help (this screen)
-  $ metar -h
+    $ metar -h
 
   References:
     GitHub: https://github.com/esperlu/metar
 
   Credit:
+    Go language: Google (Robert Griesemer, Rob Pike, and Ken Thomson)
     Weather data: aviationweather.gov in real time.
-  	Go language: Google (Robert Griesemer, Rob Pike, and Ken Thomson)
 
 ` + string(0xA9) + " Jean-Luc Lacroix 2016-2020\n"
 )

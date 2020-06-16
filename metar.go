@@ -6,7 +6,7 @@
 // Find the IATA/ICAO airport code for an airport
 //		$ metar -s munich
 //		$ metar -s new york
-// Help screen:
+// Help screen for other options:
 //		$ metar -h
 // Bug reports:
 // https://github.com/esperlu/metar/issues
@@ -25,8 +25,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/esperlu/metar/data"
-	// "./data"
+	// "github.com/esperlu/metar/data"
+	"./data"
 )
 
 // Typical URL:
@@ -42,6 +42,7 @@ const (
 )
 
 func main() {
+
 	startTotal := time.Now()
 
 	// Get init variables from data package
@@ -148,7 +149,7 @@ func main() {
 
 	// get METARS (arg[4]--> 2 METARS per hour + 30 minutes)
 	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlagInt)/2+0.5)
-	// url = "http://gaubert/metar/metar.php?type=mo"
+	url = "http://gaubert/metar/metar.php?type=mo"
 	wg.Add(1)
 	go func(urlM string) {
 		metars = wget(urlM, *timeoutFlagInt)
@@ -157,7 +158,7 @@ func main() {
 
 	// get TAFS
 	url = fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
-	// url = "http://gaubert/metar/metar.php?type=to"
+	url = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func(urlT string) {
 		tafs = wget(urlT, *timeoutFlagInt)
@@ -192,7 +193,7 @@ func main() {
 			// Store ICAO airport ID
 			id := fields[0][:4]
 
-			// Stop the for loop if maximum number of METAR si reached for one station
+			// loop if maximum number of METAR si reached for one station
 			if len(mMetars[id]) >= *numberMetarFlagInt {
 				continue
 			}
@@ -222,7 +223,7 @@ func main() {
 		// Skip the first 6 lines
 		for _, aVal := range aT[6:] {
 
-			// Remove trailing ,,,
+			// Remove trailing ,,, (only interested in the first field)
 			fields := aVal[:strings.Index(aVal, ",")]
 
 			// Remove leading "TAF COR" or "TAF" if present
@@ -235,9 +236,9 @@ func main() {
 			// put ICAO ident into id
 			id := fields[:4]
 
-			// only 1 TAF per station
-			if len(mTafs[id]) >= 1 {
-				break
+			// If there is already a TAF for that station --> loop (only 1 TAF per station)
+			if len(mTafs[id]) == 1 {
+				continue
 			}
 
 			// Store TAF in mTafs map
@@ -270,14 +271,9 @@ func main() {
 			fmt.Println("No METAR received for this station")
 		}
 
-		// print most recent TAFS
+		// print TAFS
 		if len(mTafs[v]) != 0 {
-			for k, vv := range mTafs[v] {
-				if k == 2 {
-					break
-				}
-				fmt.Printf("%s\n", vv)
-			}
+			fmt.Printf("%s\n", mTafs[v][0])
 		} else {
 			fmt.Println("No TAF received for this station")
 		}
@@ -286,7 +282,7 @@ func main() {
 	// print timing (not for raw output)
 	if !*rawFlagBool {
 		totalTime := time.Since(startTotal).Seconds()
-		fmt.Printf("\nv2.2 | Download: %.3f sec. | Process: %.3f | Total: %.3f sec.\n",
+		fmt.Printf("\nv2.2 | Download: %.3f sec. | Process: %.3f sec. | Total: %.3f sec.\n",
 			downloadTime,
 			totalTime-downloadTime,
 			totalTime,
@@ -300,9 +296,7 @@ func main() {
 func wget(url string, wgetTimeout int) string {
 
 	timeout := time.Duration(wgetTimeout) * time.Second
-	client := http.Client{
-		Timeout: timeout,
-	}
+	client := http.Client{Timeout: timeout}
 
 	// Get page and check for error (timeout, http ...)
 	res, err := client.Get(url)

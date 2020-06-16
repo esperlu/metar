@@ -44,9 +44,25 @@ Example:   ```$ metar -r -n 15 bru jfk``` prints the latest 15 metars in raw for
 
 ```$ metar -h```
 
-## Installation
+## Installation TL;DR
 
 You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started. The compilation is lightning fast and the [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) easy.
+
+## Installation
+
+### Install the latest Go for your plateform
+
+* Easy way: install the [latest version binaries](https://golang.org/dl/) or use your distro package (not always the latest version)
+* Less easy way: [compile Go from source](https://golang.org/doc/install/source)
+
+#### Get this metar repo
+
+1. `go get github.com/esperlu/metar` This will install this git repo in your GOPATH
+2. navigate to the now local sources `<GOPATH>/src/github.com/esperlu/metar`
+3. give it a try: `go run metar.go bru jfk`
+4. if successfull, compile the metar sources and data's: `go build metar.go`
+
+
 
 You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross-compiled for your convenience.
 
