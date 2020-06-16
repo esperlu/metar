@@ -17,7 +17,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"jeanluc/metarDEV/data"
 	"log"
 	"math"
 	"net/http"
@@ -25,6 +24,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/esperlu/metar/data"
 	// "./data"
 )
 
@@ -147,8 +148,7 @@ func main() {
 
 	// get METARS (arg[4]--> 2 METARS per hour + 30 minutes)
 	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlagInt)/2+0.5)
-	url = "http://gaubert/metar/metar.php?type=mo"
-	fmt.Println(url)
+	// url = "http://gaubert/metar/metar.php?type=mo"
 	wg.Add(1)
 	go func(urlM string) {
 		metars = wget(urlM, *timeoutFlagInt)
@@ -157,7 +157,7 @@ func main() {
 
 	// get TAFS
 	url = fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
-	url = "http://gaubert/metar/metar.php?type=to"
+	// url = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func(urlT string) {
 		tafs = wget(urlT, *timeoutFlagInt)
