@@ -6,7 +6,7 @@
 // Find the IATA/ICAO airport code for an airport
 //		$ metar -s munich
 //		$ metar -s new york
-// Help screen:
+// Help screen for other options:
 //		$ metar -h
 // Bug reports:
 // https://github.com/esperlu/metar/issues
@@ -20,7 +20,6 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -35,29 +34,14 @@ import (
 // Constants to fetch Weather reports from aviationweather.com
 const (
 	URL         = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
-	urlMETARfmt = URL + "&hoursBeforeNow=%d"
+	urlMETARfmt = URL + "&hoursBeforeNow=%.1f"
 	urlTAFfmt   = URL + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
 )
 
-// Metar struct for METAR variables
-type Metar struct {
-	Raw  string
-	ID   string
-	Temp float64
-	Dew  float64
-	Wind float64
-	Gust float64
-}
-
-// Taf struct for TAF variables
-type Taf struct {
-	Raw string
-	ID  string
-}
-
 func main() {
+
 	startTotal := time.Now()
 
 	// Get init variables from data package
@@ -80,13 +64,9 @@ func main() {
 		fmt.Printf("\n\tAsked for search, but no search pattern given. Quitting...\n\tTry: metar -s munich or metar -s mun\n\n")
 		return
 
-		// If option raw but no airport
-	} else if *rawFlagBool && len(flag.Args()) == 0 {
-		fmt.Printf("\n\tRaw output option requested, but no airport(s) given. Quitting...\n\tTry: metar -r MUC ebbr JFK\n\n")
-		return
-
 		// No args -> help screen
 	} else if len(flag.Args()) == 0 {
+		fmt.Printf("\n\tNo airport(s) given. Quitting...\n\tTry: metar MUC ebbr JFK (more examples below)\n\n")
 		Usage()
 		return
 	}
@@ -118,32 +98,32 @@ func main() {
 		return
 	}
 
-	// Construct two maps [iata]=>(icao) and [icao]=>(airport)+(details)
-	mAirportIcao4 := make(map[string]string)
-	mAirportIata3 := make(map[string]string)
+	// Construct two maps key-values [iata]=>(icao) and [icao]=>(airport)+(details)
+	mIata2Icao := make(map[string]string)
+	mIcao2AirportInfos := make(map[string]string)
 	for _, line := range adList {
 		lineSplit := strings.Split(string(line), ";")
-		mAirportIata3[lineSplit[0]] = lineSplit[1]
-		mAirportIcao4[lineSplit[1]] = fmt.Sprintf("(%s) %s, %s", lineSplit[0], lineSplit[2], lineSplit[3])
+		mIata2Icao[lineSplit[0]] = lineSplit[1]
+		mIcao2AirportInfos[lineSplit[1]] = fmt.Sprintf("(%s) %s, %s", lineSplit[0], lineSplit[2], lineSplit[3])
 	}
 
-	// Parse airport list
+	// Parse airport list and convert IATA code (3 char.) to ICAO code (4 char.)
 	var sStations []string
 	for _, v := range flag.Args() {
 		V := strings.ToUpper(v)
 		fmtNotFound := "\n\t\"%s\" not found. Try to run: metar -s %[1]s\n"
 
 		switch len(V) {
-		// if IATA airport code (3 char.), lookup the mAirportIata3 map
+		// if IATA airport code (3 char.), lookup the mIata2Icao map
 		case 3:
-			if _, ok := mAirportIata3[V]; ok {
-				sStations = append(sStations, mAirportIata3[V])
+			if _, ok := mIata2Icao[V]; ok {
+				sStations = append(sStations, mIata2Icao[V])
 			} else {
 				fmt.Printf(fmtNotFound, v)
 			}
-		// if ICAO airport code (4 char.), lookup the mAirportIcao4 map
+		// if ICAO airport code (4 char.), lookup the mIcao2AirportInfos map
 		case 4:
-			if _, ok := mAirportIcao4[V]; ok {
+			if _, ok := mIcao2AirportInfos[V]; ok {
 				sStations = append(sStations, V)
 			} else {
 				fmt.Printf(fmtNotFound, v)
@@ -156,7 +136,7 @@ func main() {
 	// if no station to process --> exit
 	if len(sStations) == 0 {
 		fmt.Print("\n\tNothing to fetch. Quitting...\n\n")
-		os.Exit(1)
+		return
 	}
 
 	// prepare the station list string for the URL
@@ -166,8 +146,8 @@ func main() {
 	var wg sync.WaitGroup
 	var metars, tafs string
 
-	// get METARS
-	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, *numberMetarFlagInt)
+	// get METARS (arg[4]--> 2 METARS per hour + 30 minutes)
+	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlagInt)/2+0.5)
 	wg.Add(1)
 	go func(urlM string) {
 		metars = wget(urlM, *timeoutFlagInt)
@@ -195,11 +175,11 @@ func main() {
 	mMetars := make(map[string][]string)
 	mTafs := make(map[string][]string)
 
-	var factors string
-	var m Metar
-
 	// add METARS.
 	if aM[0] == "No errors" {
+
+		var factors string
+		var m string
 
 		// Skip the first 6 lines
 		for _, aVal := range aM[6:] {
@@ -210,26 +190,23 @@ func main() {
 			// Store ICAO airport ID
 			id := fields[0][:4]
 
-			// Stop the for loop if maximum number of METAR si reached
+			// loop if maximum number of METAR si reached for one station
 			if len(mMetars[id]) >= *numberMetarFlagInt {
 				continue
 			}
 
 			raw := fields[0]
-			// If only raw requested, don't compute wind chill factor, heat factor and relative humidity
-			if *rawFlagBool {
-				m = Metar{Raw: raw, ID: id}
-			} else {
+			// If raw not requested, compute wind chill factor, heat factor and relative humidity
+			m = raw
+			if !*rawFlagBool {
 				temp, _ := strconv.ParseFloat(fields[5], 64)
 				dew, _ := strconv.ParseFloat(fields[6], 64)
 				wind, _ := strconv.ParseFloat(fields[8], 64)
-				m = Metar{Raw: raw, ID: id, Temp: temp, Dew: dew, Wind: wind}
-				if !*rawFlagBool {
-					wc, hf, rh := computeFactors(wind, temp, dew)
-					factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
-				}
+				wc, hf, rh := computeFactors(wind, temp, dew)
+				factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
+				m = raw + factors
 			}
-			mMetars[m.ID] = append(mMetars[m.ID], m.Raw+factors)
+			mMetars[id] = append(mMetars[id], m)
 		}
 
 	} else {
@@ -237,14 +214,13 @@ func main() {
 		fmt.Printf("\n\tMETAR: weather server error:\n\t%s\n", aM[0])
 
 	}
-
 	// add TAFS.
 	if aT[0] == "No errors" {
 
 		// Skip the first 6 lines
 		for _, aVal := range aT[6:] {
 
-			// Remove trailing ,,,
+			// Remove trailing ,,, (only interested in the first field)
 			fields := aVal[:strings.Index(aVal, ",")]
 
 			// Remove leading "TAF COR" or "TAF" if present
@@ -257,15 +233,14 @@ func main() {
 			// put ICAO ident into id
 			id := fields[:4]
 
-			// only 1 TAF per station
-			if len(mTafs[id]) >= 1 {
-				break
+			// If there is already a TAF for that station --> loop (only 1 TAF per station)
+			if len(mTafs[id]) == 1 {
+				continue
 			}
 
 			// Store TAF in mTafs map
 			raw := fields[5:]
-			t := Taf{ID: id, Raw: raw}
-			mTafs[t.ID] = append(mTafs[t.ID], "TAF "+t.Raw)
+			mTafs[id] = append(mTafs[id], "TAF "+raw)
 		}
 
 	} else {
@@ -281,7 +256,7 @@ func main() {
 		if *rawFlagBool {
 			fmt.Println("")
 		} else {
-			fmt.Printf("\n%s %s\n", v, mAirportIcao4[v])
+			fmt.Printf("\n%s %s\n", v, mIcao2AirportInfos[v])
 		}
 
 		// print METARS
@@ -293,22 +268,18 @@ func main() {
 			fmt.Println("No METAR received for this station")
 		}
 
-		// print most recent TAFS
+		// print TAFS
 		if len(mTafs[v]) != 0 {
-			for k, vv := range mTafs[v] {
-				if k == 2 {
-					break
-				}
-				fmt.Printf("%s\n", vv)
-			}
+			fmt.Printf("%s\n", mTafs[v][0])
 		} else {
 			fmt.Println("No TAF received for this station")
 		}
 	}
+
 	// print timing (not for raw output)
 	if !*rawFlagBool {
 		totalTime := time.Since(startTotal).Seconds()
-		fmt.Printf("\nv2.1 | Download: %.3f sec. | Process: %.3f | Total: %.3f sec.\n",
+		fmt.Printf("\nv2.2 | Download: %.3f sec. | Process: %.3f sec. | Total: %.3f sec.\n",
 			downloadTime,
 			totalTime-downloadTime,
 			totalTime,
@@ -320,10 +291,9 @@ func main() {
 
 // wget HTTP fetches URL content
 func wget(url string, wgetTimeout int) string {
+
 	timeout := time.Duration(wgetTimeout) * time.Second
-	client := http.Client{
-		Timeout: timeout,
-	}
+	client := http.Client{Timeout: timeout}
 
 	// Get page and check for error (timeout, http ...)
 	res, err := client.Get(url)
@@ -356,14 +326,15 @@ func wget(url string, wgetTimeout int) string {
 // to calculate wind chill, heat factors and relative humidity
 func computeFactors(wind float64, temp float64, dew float64) (float64, float64, float64) {
 
-	wind = wind * 1.852 // wind in kmh
+	// wind in kmh
+	wind *= 1.852
 
 	// Wind Chill (if within limits)
 	var wc float64
-	if (wind < 5) || (temp > 10) {
-		wc = temp
-	} else {
+	if (wind > 5) && (temp < 10) {
 		wc = 13.2 + 0.6215*temp + (0.3965*temp-11.37)*math.Pow(wind, 0.16)
+	} else {
+		wc = temp
 	}
 
 	// Relative Humidity (rh)
@@ -397,10 +368,10 @@ func computeFactors(wind float64, temp float64, dew float64) (float64, float64, 
 }
 
 // searchAirport searches airport in airport data list
-func searchAirport(adFile []string, searchText string) string {
+func searchAirport(airports []string, searchText string) string {
 	list := ""
 	searchText = strings.ToUpper(searchText)
-	for _, line := range adFile {
+	for _, line := range airports {
 		if strings.Contains(strings.ToUpper(line), searchText) {
 			list += fmt.Sprintf("\t%s\n", strings.Replace(line, ";", " ", -1))
 		}
