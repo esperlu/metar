@@ -14,10 +14,10 @@
 package main
 
 import (
-	"./data"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"jeanluc/metarDEV/data"
 	"log"
 	"math"
 	"net/http"
@@ -25,6 +25,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	// "./data"
 )
 
 // Typical URL:
@@ -48,7 +49,7 @@ func main() {
 	// parse the command line options
 	searchFlagBool := flag.Bool("s", false, "Search IATA/ICAO code for an airport")
 	rawFlagBool := flag.Bool("r", false, "Print raw data w/o the additional factors")
-	numberMetarFlagFloat := flag.Float64("n", 4.0, "Set number of Metars to print per station. N 1 to 30.")
+	numberMetarFlagInt := flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
 	timeoutFlagInt := flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
 
 	var Usage = func() {
@@ -62,19 +63,15 @@ func main() {
 		fmt.Printf("\n\tAsked for search, but no search pattern given. Quitting...\n\tTry: metar -s munich or metar -s mun\n\n")
 		return
 
-		// If option raw but no airport
-	} else if *rawFlagBool && len(flag.Args()) == 0 {
-		fmt.Printf("\n\tRaw output option requested, but no airport(s) given. Quitting...\n\tTry: metar -r MUC ebbr JFK\n\n")
-		return
-
 		// No args -> help screen
 	} else if len(flag.Args()) == 0 {
+		fmt.Printf("\n\tNo airport(s) given. Quitting...\n\tTry: metar MUC ebbr JFK (more examples below)\n\n")
 		Usage()
 		return
 	}
 
 	// validate number of reports (INT)
-	if *numberMetarFlagFloat <= 0 || *numberMetarFlagFloat > maxNbMETAR {
+	if *numberMetarFlagInt <= 0 || *numberMetarFlagInt > maxNbMETAR {
 		fmt.Printf(
 			"\n\t%s\n\t%s\n\n",
 			"Invalid value for option -n (number of METARS).",
@@ -149,7 +146,9 @@ func main() {
 	var metars, tafs string
 
 	// get METARS (arg[4]--> 2 METARS per hour + 30 minutes)
-	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, *numberMetarFlagFloat/2+0.5)
+	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlagInt)/2+0.5)
+	url = "http://gaubert/metar/metar.php?type=mo"
+	fmt.Println(url)
 	wg.Add(1)
 	go func(urlM string) {
 		metars = wget(urlM, *timeoutFlagInt)
@@ -158,6 +157,7 @@ func main() {
 
 	// get TAFS
 	url = fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
+	url = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func(urlT string) {
 		tafs = wget(urlT, *timeoutFlagInt)
@@ -182,22 +182,20 @@ func main() {
 
 		var factors string
 		var m string
-		var i float64
 
 		// Skip the first 6 lines
 		for _, aVal := range aM[6:] {
-
-			i++
-			// Stop the for loop if requested number of METAR si reached
-			if i > *numberMetarFlagFloat {
-				break
-			}
 
 			// Split fields
 			fields := strings.Split(aVal, ",")
 
 			// Store ICAO airport ID
 			id := fields[0][:4]
+
+			// Stop the for loop if maximum number of METAR si reached for one station
+			if len(mMetars[id]) >= *numberMetarFlagInt {
+				continue
+			}
 
 			raw := fields[0]
 			// If raw not requested, compute wind chill factor, heat factor and relative humidity
@@ -218,7 +216,6 @@ func main() {
 		fmt.Printf("\n\tMETAR: weather server error:\n\t%s\n", aM[0])
 
 	}
-
 	// add TAFS.
 	if aT[0] == "No errors" {
 
@@ -289,7 +286,7 @@ func main() {
 	// print timing (not for raw output)
 	if !*rawFlagBool {
 		totalTime := time.Since(startTotal).Seconds()
-		fmt.Printf("\nv2.1 | Download: %.3f sec. | Process: %.3f | Total: %.3f sec.\n",
+		fmt.Printf("\nv2.2 | Download: %.3f sec. | Process: %.3f | Total: %.3f sec.\n",
 			downloadTime,
 			totalTime-downloadTime,
 			totalTime,
@@ -301,6 +298,7 @@ func main() {
 
 // wget HTTP fetches URL content
 func wget(url string, wgetTimeout int) string {
+
 	timeout := time.Duration(wgetTimeout) * time.Second
 	client := http.Client{
 		Timeout: timeout,
@@ -337,7 +335,8 @@ func wget(url string, wgetTimeout int) string {
 // to calculate wind chill, heat factors and relative humidity
 func computeFactors(wind float64, temp float64, dew float64) (float64, float64, float64) {
 
-	wind = wind * 1.852 // wind in kmh
+	// wind in kmh
+	wind *= 1.852
 
 	// Wind Chill (if within limits)
 	var wc float64
