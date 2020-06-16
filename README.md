@@ -63,8 +63,7 @@ If you don't want to compile it yourself, skip the points below and go the the [
 4. if successfull, compile the metar sources and data's: `go build metar.go`
 
 
-#binaries
-## Binaries (Linux, Apple OS-X, ARM and Windows)
+## Binaries
 
 You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross-compiled for your convenience.
 
