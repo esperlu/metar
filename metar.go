@@ -14,7 +14,6 @@
 package main
 
 import (
-	"./data"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -26,6 +25,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/esperlu/metar/data"
 )
 
 // Typical URL:

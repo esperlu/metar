@@ -13,43 +13,43 @@ Synopsis:
 
   metar [OPTIONS]... [AIRPORTS]...
 
-Options:
+  Options:
 
--n <N> Set number of Metars to print per station. N: 1 to 70
--r Print raw data w/o the additional factors
--s <STRING> Search IATA/ICAO code for an airport
--t <T> connection timeout T: 1 to 10
+  -n <N> Set number of Metars to print per station. N: 1 to 70
+  -r Print raw data w/o the additional factors
+  -s <STRING> Search IATA/ICAO code for an airport
+  -t <T> connection timeout T: 1 to 10
 
 Examples:
 
-  To output gives the latest 4 metars and the latest taf. For every metar,
-  the Wind Chill factor, Heat Factor and Relative Humidity are calculated.
+  By default, the latest 4 metars and the latest taf are printed. For every metar,
+  the Wind Chill factor, Heat Factor and Relative Humidity are also calculated.
     $ metar tlv lhr jfk
 
-  To output the 10 latest metars and latest taf:
+  Output the 10 latest metars and latest taf:
     $ metar -n 10 tlv lhr jfk
 
   Same but in raw output (no special factor, no airport headers)
     $ metar -r -n 10 tlv lhr
 
-  To increase the connection timeout (default: 2 sec.)
+  Increase the connection timeout (default: 2 sec.)
     $ metar -t 5 -n 10 tlv lhr
 
-  To lookup the ICAO or IATA code for an airport:
+  Lookup the ICAO or IATA code for an airport:
     $ metar -s Ushua
     $ metar -s "new york"
 
   For help (this screen)
-  $ metar -h
+    $ metar -h
 
   References:
     GitHub: https://github.com/esperlu/metar
 
   Credit:
+    Go language: Google (Robert Griesemer, Rob Pike, and Ken Thomson)
     Weather data: aviationweather.gov in real time.
-  	Go language: Google (Robert Griesemer, Rob Pike, and Ken Thomson)
 
-` + string(0xA9) + " Jean-Luc Lacroix 2016\n"
+` + string(0xA9) + " Jean-Luc Lacroix 2016-2020\n"
 )
 
 // InitVariables Load airport id's and names in slice
