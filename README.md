@@ -44,11 +44,11 @@ Example:   ```$ metar -r -n 15 bru jfk``` prints the latest 15 metars in raw for
 
 ```$ metar -h```
 
-## Installation TL;DR
+## Installation
 
 You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started. The compilation is lightning fast and the [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) easy.
 
-## Installation
+If you don't want to compile it yourself, skip the points below and go the the [binaries](#binaries)
 
 ### Install the latest Go for your plateform
 
@@ -63,6 +63,8 @@ You will have to compile the sources using the golang tools. Follow this [howto]
 4. if successfull, compile the metar sources and data's: `go build metar.go`
 
 
+#binaries
+## Binaries (Linux, Apple OS-X, ARM and Windows)
 
 You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross-compiled for your convenience.
 
