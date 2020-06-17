@@ -65,17 +65,17 @@ If you don't want to compile it yourself, skip the points below and go the [bina
 
 ## Binaries
 
-You can also use the [binaries](https://github.com/esperlu/metar/tree/master/binaries) that I have cross-compiled for your convenience.
+You can also use the [binaries](https://github.com/esperlu/metar/tree/master) that I have cross-compiled for your convenience.
 
 OS | Architecture | Direct link
 ------------ | ----------- | -------------
-Linux 64 bit| amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/amd64/metar?raw=true)
-Linux | arm v5 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm5/metar?raw=true)
-Linux RPi-1 (Zero, A, A+, B, B+) 32-bit| arm v6 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm6/metar?raw=true)
-Linux RPi-2B 32-bit | arm v7 | [download](https://github.com/esperlu/metar/blob/master/binaries/linux/arm7/metar?raw=true)
-Darwin (OS X) | amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/darwin/amd64/metar?raw=true)
-Windows 32-bit| 386 | [download](https://github.com/esperlu/metar/blob/master/binaries/windows/amd64/metar.exe?raw=true)
-Windows 64-bit| amd64 | [download](https://github.com/esperlu/metar/blob/master/binaries/windows/amd64/metar.exe?raw=true)
+Linux 64 bit| amd64 | [download](https://github.com/esperlu/metarBin/blob/master/linux/amd64/metar?raw=true)
+Linux | arm v5 | [download](https://github.com/esperlu/metarBin/blob/master/linux/arm5/metar?raw=true)
+Linux RPi-1 (Zero, A, A+, B, B+) 32-bit| arm v6 | [download](https://github.com/esperlu/metarBin/blob/master/linux/arm6/metar?raw=true)
+Linux RPi-2B 32-bit | arm v7 | [download](https://github.com/esperlu/metaBinr/blob/master/linux/arm7/metar?raw=true)
+Darwin (OS X) | amd64 | [download](https://github.com/esperlu/metarBin/blob/master/darwin/amd64/metar?raw=true)
+Windows 32-bit| 386 | [download](https://github.com/esperlu/metarBin/blob/master/windows/amd64/metar.exe?raw=true)
+Windows 64-bit| amd64 | [download](https://github.com/esperlu/metarBin/blob/master/windows/amd64/metar.exe?raw=true)
 
 
 Once downloaded **Linux and Mac** users will have to make that file executable: `$ chmod +x metar`
