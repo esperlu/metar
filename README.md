@@ -5,9 +5,9 @@ This go program fetch the aviation METAR's and TAF's for a given list of airport
 As an addition to the METAR messages, Wind Chill factor, Heat Factor and Relative Humidity are computed when applicable.
 
 
-**Retrieve messages for a list of stations (IATA or ICAO codes):**
+## Retrieve messages for a list of stations (IATA or ICAO codes)
 
-```$ metar lhr jfk bru uudd```
+```$ metar lhr jfk BRU uudd``` (Case insensitive)
 
 The output looks like this:
 
@@ -23,14 +23,14 @@ TAF UUDD 301355Z 3015/0121 24007MPS 9999 BKN007 TX18/0111Z TN10/0102Z TEMPO 3015
 
 At the end of the METAR's, the three values between brackets are the computed  ```[ wind chill factor | heat factor | relative humidity % ]```
 
-**Find the IATA/ICAO airport code for an airport**
+## Find the IATA/ICAO airport code for an airport
 
 ```
 $ metar -s munich
 $ metar -s new york
 ```
 
-**Options**
+## Options
 
 ```
 -r      raw output (no airport header and no additional factors)
@@ -40,7 +40,7 @@ $ metar -s new york
 Example:   ```$ metar -r -n 15 bru jfk``` prints the latest 15 metars in raw format
 
 
-**Help screen:**
+## Help screen
 
 ```$ metar -h```
 
@@ -48,7 +48,7 @@ Example:   ```$ metar -r -n 15 bru jfk``` prints the latest 15 metars in raw for
 
 You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started. The compilation is lightning fast and the [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) easy.
 
-If you don't want to compile it yourself, skip the points below and go the the [binaries](#binaries)
+If you don't want to compile it yourself, skip the points below and go the [binaries](#binaries)
 
 ### Install the latest Go for your plateform
 
