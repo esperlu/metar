@@ -1,3 +1,6 @@
+2020-06-17
+* added "super raw" output option (-rr)
+
 2020-06-07
 * added a couple of new stations
 * changed maximum number of METARs to 70
