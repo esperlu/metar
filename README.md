@@ -33,9 +33,10 @@ $ metar -s new york
 ## Options
 
 ```
--r      raw output (no airport header and no additional factors)
 -n <N>  number of metar to print (min. 1, max. 70)
 -t <T>  connection timeout in sec. (min.1 max 10)
+-r      raw output (no airport header and no additional factors)
+-rr     super raw output (just METAR's and TAF's)
 ```
 Example:   ```$ metar -r -n 15 bru jfk``` prints the latest 15 metars in raw format
 
@@ -57,10 +58,10 @@ If you don't want to compile it yourself, skip the points below and go the [bina
 
 ### Get this metar repo
 
-1. `go get github.com/esperlu/metar` This will install this git repo in your GOPATH
+1. `go get github.com/esperlu/metar` This will install this git repo in the directory defined in your `GOPATH` environment variable.
 2. navigate to the now local sources `<GOPATH>/src/github.com/esperlu/metar`
 3. give it a try: `go run metar.go bru jfk`
-4. if successfull, compile the metar sources and data's: `go build metar.go`
+4. if successfull, compile the metar sources and data: `go build metar.go` or `go install metar.go` to install the binary in the binary folder defined in the `GOBIN` environment variable to make it accessible and executable system wide.
 
 
 ## Binaries
@@ -76,7 +77,6 @@ Linux RPi-2B 32-bit | arm v7 | [download](https://github.com/esperlu/metarBin/bl
 Darwin (OS X) | amd64 | [download](https://github.com/esperlu/metarBin/blob/master/darwin/amd64/metar?raw=true)
 Windows 32-bit| 386 | [download](https://github.com/esperlu/metarBin/blob/master/windows/386/metar.exe?raw=true)
 Windows 64-bit| amd64 | [download](https://github.com/esperlu/metarBin/blob/master/windows/amd64/metar.exe?raw=true)
-
 
 Once downloaded **Linux and Mac** users will have to make that file executable: `$ chmod +x metar`
 
