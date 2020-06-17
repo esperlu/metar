@@ -65,7 +65,7 @@ If you don't want to compile it yourself, skip the points below and go the [bina
 
 ## Binaries
 
-You can also use the [binaries](https://github.com/esperlu/metar/tree/master) that I have cross-compiled for your convenience.
+You can also use the [binaries](https://github.com/esperlu/metarBin/tree/master) that I have cross-compiled for your convenience.
 
 OS | Architecture | Direct link
 ------------ | ----------- | -------------
