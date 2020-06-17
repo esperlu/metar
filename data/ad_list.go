@@ -15,10 +15,11 @@ Synopsis:
 
   Options:
 
-  -n <N> Set number of Metars to print per station. N: 1 to 70
-  -r Print raw data w/o the additional factors
-  -s <STRING> Search IATA/ICAO code for an airport
-  -t <T> connection timeout T: 1 to 10
+  -n  <N> Set number of Metars to print per station. N: 1 to 70
+  -s  <STRING> Search IATA/ICAO code for an airport
+  -t  <T> connection timeout T: 1 to 10
+  -r  Print raw data w/o the additional factors
+  -rr Super raw data: only METARs and TAFs
 
 Examples:
 

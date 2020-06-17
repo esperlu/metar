@@ -58,10 +58,10 @@ If you don't want to compile it yourself, skip the points below and go the [bina
 
 ### Get this metar repo
 
-1. `go get github.com/esperlu/metar` This will install this git repo in your GOPATH
+1. `go get github.com/esperlu/metar` This will install this git repo in the directory defined in your `GOPATH` environment variable.
 2. navigate to the now local sources `<GOPATH>/src/github.com/esperlu/metar`
 3. give it a try: `go run metar.go bru jfk`
-4. if successfull, compile the metar sources and data's: `go build metar.go`
+4. if successfull, compile the metar sources and data: `go build metar.go` or `go install metar.go` to install the binary in the binary folder defined in the `GOBIN` environment variable to make it accessible and executable system wide.
 
 
 ## Binaries
