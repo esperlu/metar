@@ -25,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/esperlu/metar/data"
+	"github.com/esperlu/metarDEV/data"
 )
 
 // Typical URL:
