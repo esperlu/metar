@@ -28,7 +28,7 @@ Examples:
     $ metar tlv lhr jfk
 
   Output the 10 latest metars and latest taf:
-    $ metar -n 10 tlv lhr jfk
+    $ metar -n 10 tlv EGLL jfk ebbr
 
   Same but in raw output (no special factor, no airport headers)
     $ metar -r -n 10 tlv lhr

@@ -25,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/esperlu/metarDEV/data"
+	"github.com/esperlu/metar/data"
 )
 
 // Typical URL:
@@ -40,6 +40,18 @@ const (
 	maxTIMEOUT  = 10
 )
 
+// flag variables
+var searchFlagBool = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
+var rawFlagBool = flag.Bool("r", false, "Print raw data w/o the additional factors")
+var rawRawFlagBool = flag.Bool("rr", false, "Super raw output. Just the MATAR's and TAF's")
+var numberMetarFlagInt = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
+var timeoutFlagInt = flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
+
+// init flags to make them available to func's
+func init() {
+	flag.Parse()
+}
+
 func main() {
 
 	startTotal := time.Now()
@@ -47,13 +59,7 @@ func main() {
 	// Get init variables from data package
 	adList, Help := data.InitVariables()
 
-	// parse the command line options
-	searchFlagBool := flag.Bool("s", false, "Search IATA/ICAO code for an airport")
-	rawFlagBool := flag.Bool("r", false, "Print raw data w/o the additional factors")
-	rawRawFlagBool := flag.Bool("rr", false, "Super raw output. Just the MATAR's and TAF's")
-	numberMetarFlagInt := flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
-	timeoutFlagInt := flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
-
+	// FLAGS: parse and validate
 	var Usage = func() {
 		fmt.Println(Help)
 	}
@@ -92,7 +98,7 @@ func main() {
 		return
 	}
 
-	// search option
+	// search option -s
 	if *searchFlagBool {
 		fmt.Printf("\n%s\n", searchAirport(adList, strings.Join(flag.Args(), " ")))
 		fmt.Printf("\tFound in: %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
@@ -143,125 +149,49 @@ func main() {
 	// prepare the station list string for the URL
 	stationList := strings.Join(sStations, "%20")
 
+	// Start download timer
 	startDownload := time.Now()
+
 	var wg sync.WaitGroup
-	var metars, tafs string
+	var metarResponse, tafResponse string
+	var mMetars, mTafs map[string][]string
+	var err error
 
-	// get METARS (arg[4]--> 2 METARS per hour + 30 minutes)
-	url := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlagInt)/2+0.5)
-	// url = "http://gaubert/metar/metar.php?type=mo"
+	// get METARS routine (arg[4]--> 2 METARS per hour + 30 minutes)
+	urlM := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlagInt)/2+0.5)
+	// urlM = "http://gaubert/metar/metar.php?type=mo"
 	wg.Add(1)
-	go func(urlM string) {
-		metars = wget(urlM, *timeoutFlagInt)
+	go func() {
+		metarResponse = wget(urlM, *timeoutFlagInt)
+		mMetars, err = parseMetarNOAA(metarResponse)
+		if err != nil {
+			fmt.Printf("\n\t%s\n", err)
+		}
+
 		wg.Done()
-	}(url)
+	}()
 
-	// get TAFS
-	url = fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
-	// url = "http://gaubert/metar/metar.php?type=to"
-
+	// get TAFS routine
+	urlT := fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
+	// urlT = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
-	go func(urlT string) {
-		tafs = wget(urlT, *timeoutFlagInt)
+	go func() {
+		tafResponse = wget(urlT, *timeoutFlagInt)
+		mTafs, err = parseTafNOAA(tafResponse)
+		if err != nil {
+			fmt.Printf("\n\t%s\n", err)
+		}
+
 		wg.Done()
-	}(url)
+	}()
 
 	// Wait for all go routines to finish
 	wg.Wait()
 
+	// stop download timer
 	downloadTime := time.Since(startDownload).Seconds()
 
-	// store each line in a slice of strings
-	aM := strings.Split(metars, "\n")
-	aT := strings.Split(tafs, "\n")
-
-	// initialize map for metars and tafs
-	mMetars := make(map[string][]string)
-	mTafs := make(map[string][]string)
-
-	// add METARS.
-	if aM[0] == "No errors" {
-
-		var factors string
-		var m string
-
-		// Skip the first 6 lines
-		for _, aVal := range aM[6:] {
-
-			// Split fields
-			fields := strings.Split(aVal, ",")
-
-			// Store ICAO airport ID
-			id := fields[0][:4]
-
-			// loop if maximum number of METAR si reached for one station
-			if len(mMetars[id]) >= *numberMetarFlagInt {
-				continue
-			}
-
-			raw := fields[0]
-			// If raw not requested, compute wind chill factor, heat factor and relative humidity
-			m = raw
-			if !*rawFlagBool && !*rawRawFlagBool {
-				temp, _ := strconv.ParseFloat(fields[5], 64)
-				dew, _ := strconv.ParseFloat(fields[6], 64)
-				wind, _ := strconv.ParseFloat(fields[8], 64)
-				wc, hf, rh := computeFactors(wind, temp, dew)
-				factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
-				m = raw + factors
-			}
-			if *rawRawFlagBool || *rawFlagBool {
-				m = "M: " + m
-			}
-			mMetars[id] = append(mMetars[id], m)
-		}
-
-	} else {
-
-		fmt.Printf("\n\tMETAR: weather server error:\n\t%s\n", aM[0])
-
-	}
-	// add TAFS.
-	if aT[0] == "No errors" {
-
-		// Skip the first 6 lines
-		for _, aVal := range aT[6:] {
-
-			// Remove trailing ,,, (only interested in the first field)
-			fields := aVal[:strings.Index(aVal, ",")]
-
-			// Remove leading "TAF COR" or "TAF" if present
-			if fields[:8] == "TAF COR " {
-				fields = fields[8:]
-			} else if fields[:4] == "TAF " {
-				fields = fields[4:]
-			}
-
-			// put ICAO ident into id
-			id := fields[:4]
-
-			// If there is already a TAF for that station --> loop (only 1 TAF per station)
-			if len(mTafs[id]) == 1 {
-				continue
-			}
-
-			// Store TAF in mTafs map
-			raw := fields[5:]
-			header := "TAF "
-			if *rawRawFlagBool || *rawFlagBool {
-				header = "T: " + id + " "
-			}
-			mTafs[id] = append(mTafs[id], header+raw)
-		}
-
-	} else {
-
-		fmt.Printf("\n\tTAF: weather server error:\n\t%s\n", aT[0])
-
-	}
-
-	// final print
-
+	// final print to terminal
 	for _, v := range sStations {
 		// Airport title or separator (raw option)
 		if *rawFlagBool {
@@ -391,4 +321,91 @@ func searchAirport(airports []string, searchText string) string {
 		return "\tNothing found\n"
 	}
 	return list
+}
+
+// parseMetarNOAA parse METARs received from NOAA server
+func parseMetarNOAA(metarResponse string) (map[string][]string, error) {
+	aM := strings.Split(metarResponse, "\n")
+	mMetars := make(map[string][]string)
+
+	// add METARS.
+	if aM[0] != "No errors" {
+		return mMetars, fmt.Errorf("Error METAR: NOAA weather server error: %s", aM[0])
+	}
+
+	var factors string
+	var m string
+
+	// Skip the first 6 lines
+	for _, aVal := range aM[6:] {
+
+		// Split fields
+		fields := strings.Split(aVal, ",")
+
+		// Store ICAO airport ID
+		id := fields[0][:4]
+
+		// loop if maximum number of METAR si reached for one station
+		if len(mMetars[id]) >= *numberMetarFlagInt {
+			continue
+		}
+
+		raw := fields[0]
+		// If raw not requested, compute wind chill factor, heat factor and relative humidity
+		m = raw
+		if !*rawFlagBool && !*rawRawFlagBool {
+			temp, _ := strconv.ParseFloat(fields[5], 64)
+			dew, _ := strconv.ParseFloat(fields[6], 64)
+			wind, _ := strconv.ParseFloat(fields[8], 64)
+			wc, hf, rh := computeFactors(wind, temp, dew)
+			factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
+			m = raw + factors
+		}
+		if *rawRawFlagBool || *rawFlagBool {
+			m = "M: " + m
+		}
+		mMetars[id] = append(mMetars[id], m)
+	}
+	return mMetars, nil
+}
+
+// parseTafNOAA parse TAFs received from NOAA server
+func parseTafNOAA(tafResponse string) (map[string][]string, error) {
+	aT := strings.Split(tafResponse, "\n")
+	mTafs := make(map[string][]string)
+
+	if aT[0] != "No errors" {
+		return mTafs, fmt.Errorf("Error TAF: NOAA weather server error: %s", aT[0])
+	}
+	// Skip the first 6 lines
+	for _, aVal := range aT[6:] {
+
+		// Remove trailing ,,, (only interested in the first field)
+		fields := aVal[:strings.Index(aVal, ",")]
+
+		// Remove leading "TAF COR" or "TAF" if present
+		if fields[:8] == "TAF COR " {
+			fields = fields[8:]
+		} else if fields[:4] == "TAF " {
+			fields = fields[4:]
+		}
+
+		// put ICAO ident into id
+		id := fields[:4]
+
+		// If there is already a TAF for that station --> loop (only 1 TAF per station)
+		if len(mTafs[id]) == 1 {
+			continue
+		}
+
+		// Store TAF in mTafs map
+		raw := fields[5:]
+		header := "TAF "
+		if *rawRawFlagBool || *rawFlagBool {
+			header = "T: " + id + " "
+		}
+		mTafs[id] = append(mTafs[id], header+raw)
+	}
+
+	return mTafs, nil
 }
