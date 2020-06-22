@@ -21,7 +21,7 @@ OPTIONS:
   -s <STRING> Search IATA/ICAO code for an airport
   -t <T>      Connection timeout T: 1 to 10
   -r          Print raw data w/o the additional factors
-  -rr         Super raw data: only METARs and TAFs
+  -m          METARS only
   -h          This help screen
 
 EXAMPLES:
@@ -50,8 +50,8 @@ EXAMPLES:
     GitHub: https://github.com/esperlu/metar
 
   Credit:
-    Go language: Google (Robert Griesemer, Rob Pike, and Ken Thomson)
-    Weather data: aviationweather.gov in real time.
+    Go language: Google (Robert Griesemer, Rob Pike, Ken Thomson) and many other contributors.
+    Weather data: NOAAA's aviationweather.gov
 
 ` + string(0xA9) + " Jean-Luc Lacroix 2016-2020\n"
 

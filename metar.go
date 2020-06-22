@@ -43,11 +43,11 @@ const (
 
 // https://flaviocopes.com/go-command-line-flags/
 // flag variables
-var searchFlagBool = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
-var rawFlagBool = flag.Bool("r", false, "Print raw data w/o the additional factors")
-var rawRawFlagBool = flag.Bool("rr", false, "Super raw output. Just the MATAR's and TAF's")
 var numberMetarFlagInt = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
+var searchFlagBool = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
 var timeoutFlagInt = flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
+var rawFlagBool = flag.Bool("r", false, "Print raw data w/o the additional factors")
+var metarOnlyFlagBool = flag.Bool("m", false, "METARs only")
 
 // init flags to make them available to func's
 func init() {
@@ -176,7 +176,7 @@ func main() {
 		fmt.Printf("\n%s\n\n", checkWgetErr(errM))
 		return
 	}
-	if errT != nil {
+	if errT != nil && !*metarOnlyFlagBool {
 		fmt.Printf("\n%s\n\n", checkWgetErr(errT))
 		return
 	}
@@ -186,9 +186,13 @@ func main() {
 	if err != nil {
 		fmt.Println("\n", err)
 	}
-	mTafs, err := parseTafNOAA(tafResponse)
-	if err != nil {
-		fmt.Println("\n", err)
+
+	var mTafs map[string][]string
+	if !*metarOnlyFlagBool {
+		mTafs, err = parseTafNOAA(tafResponse)
+		if err != nil {
+			fmt.Println("\n", err)
+		}
 	}
 
 	// stop download timer
@@ -196,10 +200,9 @@ func main() {
 
 	// final print to terminal
 	for _, v := range sStations {
+
 		// Airport title or separator (raw option)
-		if *rawFlagBool {
-			fmt.Println("")
-		} else if !*rawFlagBool && !*rawRawFlagBool {
+		if !*rawFlagBool {
 			fmt.Printf("\n%s %s\n", v, mIcao2AirportInfos[v])
 		}
 
@@ -212,16 +215,18 @@ func main() {
 			fmt.Println("No METAR received for this station")
 		}
 
-		// print TAFs
-		if len(mTafs[v]) != 0 {
-			fmt.Printf("%s\n", mTafs[v][0])
-		} else {
-			fmt.Println("No TAF received for this station")
+		if !*metarOnlyFlagBool {
+			// print TAFs
+			if len(mTafs[v]) != 0 {
+				fmt.Printf("%s\n", mTafs[v][0])
+			} else {
+				fmt.Println("No TAF received for this station")
+			}
 		}
 	}
 
 	// print timing (not for raw output)
-	if !*rawFlagBool && !*rawRawFlagBool {
+	if !*rawFlagBool {
 		totalTime := time.Since(startTotal).Seconds()
 		fmt.Printf("\nv2.2 | Download: %.3f sec. | Process: %.3f sec. | Total: %.3f sec.\n",
 			downloadTime,
@@ -362,15 +367,14 @@ func parseMetarNOAA(metarResponse string) (map[string][]string, error) {
 		}
 
 		// If raw not requested, compute wind chill factor, heat factor and relative humidity
-		if !*rawFlagBool && !*rawRawFlagBool {
+		if !*rawFlagBool {
 			temp, _ := strconv.ParseFloat(fields[5], 64)
 			dew, _ := strconv.ParseFloat(fields[6], 64)
 			wind, _ := strconv.ParseFloat(fields[8], 64)
 			wc, hf, rh := computeFactors(wind, temp, dew)
 			factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
 			raw += factors
-		}
-		if *rawRawFlagBool || *rawFlagBool {
+		} else {
 			raw = "M:" + raw
 		}
 		mMetars[id] = append(mMetars[id], raw)
@@ -411,7 +415,7 @@ func parseTafNOAA(tafResponse string) (map[string][]string, error) {
 		// Store TAF in mTafs map
 		raw := fields[5:]
 		header := "TAF "
-		if *rawRawFlagBool || *rawFlagBool {
+		if *rawFlagBool {
 			header = "T:" + id + " "
 		}
 		mTafs[id] = append(mTafs[id], header+raw)
