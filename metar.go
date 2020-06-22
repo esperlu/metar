@@ -228,7 +228,7 @@ func main() {
 	// print timing (not for raw output)
 	if !*rawFlagBool {
 		totalTime := time.Since(startTotal).Seconds()
-		fmt.Printf("\nv2.2 | Download: %.3f sec. | Process: %.3f sec. | Total: %.3f sec.\n",
+		fmt.Printf("\nv2.3 | Download: %.3f sec. | Process: %.3f sec. | Total: %.3f sec.\n",
 			downloadTime,
 			totalTime-downloadTime,
 			totalTime,
