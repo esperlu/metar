@@ -93,20 +93,42 @@ func main() {
 		return
 	}
 
-	// search option -s
-	if *searchFlagBool {
-		fmt.Printf("\n%s\n", searchAirport(data.AdList, strings.Join(flag.Args(), " ")))
-		fmt.Printf("\tFound in: %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
-		return
+	// Build key-values tables
+	// Table map[countryCode] -> Country
+	mCode2Country := make(map[string][]string)
+	for _, line := range data.CountryList {
+		lineSplit := strings.Split(line, ";")
+		mCode2Country[lineSplit[0]] = []string{lineSplit[1], lineSplit[2]}
 	}
 
-	// Construct two maps key-values [iata]=>(icao) and [icao]=>(airport)+(details)
+	// // Table map[continetCode]-> continent
+	mCode2Continent := make(map[string]string)
+	for _, line := range data.ContinentList {
+		lineSplit := strings.Split(line, ";")
+		mCode2Continent[lineSplit[0]] = string(lineSplit[1])
+	}
+
+	// Table map[iata]=>(icao) and map[icao]=>(airport)+(details)
 	mIata2Icao := make(map[string]string)
 	mIcao2AirportInfos := make(map[string]string)
 	for _, line := range data.AdList {
 		lineSplit := strings.Split(string(line), ";")
 		mIata2Icao[lineSplit[0]] = lineSplit[1]
-		mIcao2AirportInfos[lineSplit[1]] = fmt.Sprintf("(%s) %s, %s", lineSplit[0], lineSplit[2], lineSplit[3])
+		mIcao2AirportInfos[lineSplit[1]] = fmt.Sprintf(
+			"%s (%s) %s, %s (%s)",
+			lineSplit[1],
+			lineSplit[0],
+			lineSplit[2],
+			mCode2Country[lineSplit[3]][1],
+			mCode2Country[lineSplit[3]][0],
+		)
+	}
+
+	// search option -s
+	if *searchFlagBool {
+		fmt.Printf("\n%s\n", searchAirport2(mIcao2AirportInfos, strings.Join(flag.Args(), " ")))
+		fmt.Printf("\tFound in: %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
+		return
 	}
 
 	// Parse airport list and convert IATA code (3 char.) to ICAO code (4 char.)
@@ -163,6 +185,7 @@ func main() {
 	// get TAFS routine
 	urlT := fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
 	urlT = "http://gaubert/metar/metar.php?type=to"
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -203,7 +226,7 @@ func main() {
 
 		// Airport title or separator (raw option)
 		if !*rawFlagBool {
-			fmt.Printf("\n%s %s\n", v, mIcao2AirportInfos[v])
+			fmt.Printf("\n%s\n", mIcao2AirportInfos[v])
 		}
 
 		// print METARs
@@ -332,6 +355,21 @@ func searchAirport(airports []string, searchText string) string {
 	for _, line := range airports {
 		if strings.Contains(strings.ToUpper(line), searchText) {
 			list += fmt.Sprintf("\t%s\n", strings.Replace(line, ";", " ", -1))
+		}
+	}
+	if list == "" {
+		return "\tNothing found\n"
+	}
+	return list
+}
+
+// searchAirport searches airport in airport data list
+func searchAirport2(mIcao2AirportInfos map[string]string, searchText string) string {
+	var list string
+	searchText = strings.ToUpper(searchText)
+	for _, line := range mIcao2AirportInfos {
+		if strings.Contains(strings.ToUpper(line), searchText) {
+			list += fmt.Sprintf("\t%s\n", line)
 		}
 	}
 	if list == "" {
