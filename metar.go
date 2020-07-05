@@ -28,9 +28,6 @@ import (
 	"github.com/esperlu/metar/data"
 )
 
-// Typical URL:
-// https://www.aviationweather.gov/dataserver/example?datatype=metar
-
 // Constants to fetch Weather reports from aviationweather.com
 const (
 	URL         = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
@@ -40,7 +37,6 @@ const (
 	maxTIMEOUT  = 10
 )
 
-// https://flaviocopes.com/go-command-line-flags/
 // flag variables
 var numberMetarFlagInt = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
 var searchFlagBool = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
