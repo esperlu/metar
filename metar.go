@@ -41,14 +41,14 @@ const (
 
 // Initialize and parse flags
 var (
-	numberMetarFlag         = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
-	searchFlag              = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
-	listCountriesFlag       = flag.Bool("lc", false, "List all countries with ISO code")
-	listCountryAirportsFlag = flag.Bool("la", false, "List all for one country (ISO code)")
-	timeoutFlag             = flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
-	rawFlag                 = flag.Bool("r", false, "Print raw data w/o the additional factors")
-	metarOnlyFlag           = flag.Bool("m", false, "METARs only")
-	tafOnlyFlag             = flag.Bool("f", false, "TAF (forecast) only")
+	numberMetarFlag   = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
+	searchFlag        = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
+	listCountriesFlag = flag.Bool("lc", false, "List all countries with ISO code")
+	listAirportsFlag  = flag.Bool("la", false, "List all for one country (ISO code)")
+	timeoutFlag       = flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
+	rawFlag           = flag.Bool("r", false, "Print raw data w/o the additional factors")
+	metarOnlyFlag     = flag.Bool("m", false, "METARs only")
+	tafOnlyFlag       = flag.Bool("f", false, "TAF (forecast) only")
 )
 
 func init() {
@@ -69,7 +69,7 @@ func main() {
 	}
 
 	// No args -> help screen
-	if !*listCountriesFlag && !*listCountryAirportsFlag && len(flag.Args()) == 0 {
+	if !*listCountriesFlag && !*listAirportsFlag && len(flag.Args()) == 0 {
 		fmt.Printf("\n  No airport(s) given. Quitting...\n  Try: `metar MUC ebbr JFK` (more examples below)\n\n")
 		fmt.Println(data.Help)
 		return
@@ -102,7 +102,7 @@ func main() {
 	}
 
 	// Option -la (list airports) needs arguments.
-	if *listCountryAirportsFlag && len(flag.Args()) == 0 {
+	if *listAirportsFlag && len(flag.Args()) == 0 {
 		fmt.Printf("\n %s\n %s\n\n",
 			"option -la (list country airports) needs at least one argument (country code)",
 			"Try: `metar -la BE` or for multiple countries: `metar FR CH PT`",
@@ -112,33 +112,33 @@ func main() {
 
 	// Build key-values tables
 	// Table map[countryCode] -> []string{Country name, continent code}
-	code2Country := make(map[string][]string)
+	code2country := make(map[string][]string)
 	for _, line := range data.CountryList {
 		lineSplit := strings.Split(line, ";")
-		code2Country[lineSplit[1]] = []string{lineSplit[0], lineSplit[2]}
+		code2country[lineSplit[1]] = []string{lineSplit[0], lineSplit[2]}
 
 	}
 
 	// Table map[iata]=>(icao) and map[icao]=>(airport)+(details)
-	iata2Icao := make(map[string]string)
-	icao2AirportInfos := make(map[string]string)
+	iata2icao := make(map[string]string)
+	icao2airportInfos := make(map[string]string)
 	for _, line := range data.AdList {
 		lineSplit := strings.Split(string(line), ";")
-		iata2Icao[lineSplit[0]] = lineSplit[1]
-		icao2AirportInfos[lineSplit[1]] = fmt.Sprintf(
+		iata2icao[lineSplit[0]] = lineSplit[1]
+		icao2airportInfos[lineSplit[1]] = fmt.Sprintf(
 			"%s (%s) %s, %s %s (%s)",
 			lineSplit[1],
 			lineSplit[0],
 			lineSplit[2],
-			code2Country[lineSplit[3]][0],
+			code2country[lineSplit[3]][0],
 			lineSplit[3],
-			code2Country[lineSplit[3]][1],
+			code2country[lineSplit[3]][1],
 		)
 	}
 
 	// search option -s
 	if *searchFlag {
-		fmt.Printf("\n%s\n", searchAirport2(icao2AirportInfos, strings.Join(flag.Args(), " ")))
+		fmt.Printf("\n%s\n", searchAirport(icao2airportInfos, strings.Join(flag.Args(), " ")))
 		fmt.Printf("  Processed in %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
@@ -151,7 +151,7 @@ func main() {
 	}
 
 	// List country airports
-	if *listCountryAirportsFlag {
+	if *listAirportsFlag {
 		if len(flag.Args()[0]) != 2 {
 			fmt.Printf(
 				"\n  %s\n  %s\n  %s\n\n",
@@ -161,7 +161,7 @@ func main() {
 			)
 			return
 		}
-		fmt.Printf("\n%s\n", listAirports(flag.Args(), code2Country))
+		fmt.Printf("\n%s\n", listAirports(flag.Args(), code2country))
 		fmt.Printf("  Processed in %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
@@ -173,16 +173,16 @@ func main() {
 		fmtNotFound := "\n  \"%s\" not found. Try to run: metar -s %[1]s\n"
 
 		switch len(v) {
-		// if IATA airport code (3 char.), lookup the iata2Icao map
+		// if IATA airport code (3 char.), lookup the iata2icao map
 		case 3:
-			if _, ok := iata2Icao[v]; ok {
-				stations = append(stations, iata2Icao[v])
+			if _, ok := iata2icao[v]; ok {
+				stations = append(stations, iata2icao[v])
 			} else {
 				fmt.Printf(fmtNotFound, v)
 			}
-		// if ICAO airport code (4 char.), lookup the icao2AirportInfos map
+		// if ICAO airport code (4 char.), lookup the icao2airportInfos map
 		case 4:
-			if _, ok := icao2AirportInfos[v]; ok {
+			if _, ok := icao2airportInfos[v]; ok {
 				stations = append(stations, v)
 			} else {
 				fmt.Printf(fmtNotFound, v)
@@ -210,7 +210,7 @@ func main() {
 
 	// get METARs routine (arg[4]--> 2 METARs per hour + 30 minutes)
 	urlM := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlag)/2+0.5)
-	urlM = "http://gaubert/metar/metar.php?type=mo"
+	// urlM = "http://gaubert/metar/metar.php?type=mo"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -219,7 +219,7 @@ func main() {
 
 	// get TAFS routine
 	urlT := fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
-	urlT = "http://gaubert/metar/metar.php?type=to"
+	// urlT = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -241,14 +241,15 @@ func main() {
 	// parse responses
 	metars, err := parseMetarNOAA(metarResponse)
 	if err != nil {
-		fmt.Println("\n", err)
+		fmt.Printf("\n %s.\n\n", err)
+		return
 	}
 
 	var tafs map[string][]string
 	if !*metarOnlyFlag {
 		tafs, err = parseTafNOAA(tafResponse)
 		if err != nil {
-			fmt.Println("\n", err)
+			fmt.Printf("\n %s.\n\n", err)
 		}
 	}
 
@@ -260,7 +261,7 @@ func main() {
 
 		// Airport title or separator (raw option)
 		if !*rawFlag {
-			fmt.Printf("\n%s\n", icao2AirportInfos[v])
+			fmt.Printf("\n%s\n", icao2airportInfos[v])
 		}
 
 		// print METARs
@@ -313,7 +314,6 @@ func wget(urlString string, wgetTimeout int) (string, error) {
 	} else if err != nil {
 		return "", err
 	}
-
 	defer res.Body.Close()
 
 	// if not HTTP 200 OK in response header
@@ -325,7 +325,7 @@ func wget(urlString string, wgetTimeout int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	// return string(wgetAnswer), nil
 	// return output (after removing trailing \n)
 	return string(wgetAnswer[:len(wgetAnswer)-1]), nil
 }
@@ -386,10 +386,10 @@ func computeFactors(wind float64, temp float64, dew float64) (float64, float64, 
 }
 
 // searchAirport searches airport in airport data list
-func searchAirport2(icao2AirportInfos map[string]string, countryCodes string) string {
+func searchAirport(icao2airportInfos map[string]string, countryCodes string) string {
 	var list string
 	countryCodes = strings.ToUpper(countryCodes)
-	for _, line := range icao2AirportInfos {
+	for _, line := range icao2airportInfos {
 		if strings.Contains(strings.ToUpper(line), countryCodes) {
 			list += fmt.Sprintf("  %s\n", line)
 		}
@@ -405,9 +405,8 @@ func listCountries(countryCodes string) string {
 	var list string
 	countryCodes = strings.ToUpper(countryCodes)
 	for _, line := range data.CountryList {
-		splitLine := strings.Split(line, ";")
-		if strings.Contains(strings.ToUpper(splitLine[0]), countryCodes) {
-			// list += fmt.Sprintf("   %s\n", strings.Replace(line, ";", " ", -1))
+		if strings.Contains(strings.ToUpper(line), countryCodes) {
+			splitLine := strings.Split(line, ";")
 			list += fmt.Sprintf("  %s %s (%s)\n", splitLine[1], splitLine[0], splitLine[2])
 		}
 	}
@@ -449,55 +448,55 @@ func listAirports(countryCodes []string, code2country map[string][]string) strin
 
 // parseMetarNOAA parse METARs received from NOAA server
 func parseMetarNOAA(metarResponse string) (map[string][]string, error) {
-	aM := strings.Split(metarResponse, "\n")
-	mMetars := make(map[string][]string)
+	metars := make(map[string][]string)
 	var factors string
 
-	// add METARS.
+	// Split response on EOL and store fields value in map
+	aM := strings.Split(metarResponse, "\n")
 	if aM[0] != "No errors" {
-		return mMetars, fmt.Errorf("Error METAR: NOAA weather server error: %s", aM[0])
+		return metars, fmt.Errorf("Error METAR: NOAA weather server error: %s", aM[0])
 	}
 
 	// Skip the first 6 lines
 	for _, aVal := range aM[6:] {
 
-		// Split fields
+		// Split fields. Retrun error if missing fields.
 		fields := strings.Split(aVal, ",")
+		if len(fields) != 44 {
+			return metars, fmt.Errorf("Error METAR: NOAA format non compliant. Missing fields in response")
+		}
 
 		// Store raw METAR and ICAO airport ID
 		raw := fields[0]
 		id := fields[1]
 
 		// loop if maximum number of METAR si reached for one station
-		if len(mMetars[id]) >= *numberMetarFlag {
+		if len(metars[id]) >= *numberMetarFlag {
 			continue
 		}
 
-		// Condition: we have all temp, dew and wind NOT empty
-		nonEmptyFields := (fields[5] != "" && fields[6] != "" && fields[8] != "")
-
 		// If raw not requested, compute wind chill factor, heat factor and relative humidity
-		if !*rawFlag && nonEmptyFields {
+		if !*rawFlag && fields[5] != "" && fields[6] != "" && fields[8] != "" {
 			temp, _ := strconv.ParseFloat(fields[5], 64)
 			dew, _ := strconv.ParseFloat(fields[6], 64)
 			wind, _ := strconv.ParseFloat(fields[8], 64)
 			wc, hf, rh := computeFactors(wind, temp, dew)
 			factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
 			raw += factors
-		} else if *rawFlag && !nonEmptyFields {
+		} else {
 			raw = "M:" + raw
 		}
-		mMetars[id] = append(mMetars[id], raw)
+		metars[id] = append(metars[id], raw)
 	}
-
-	return mMetars, nil
+	return metars, nil
 }
 
 // parseTafNOAA parse TAFs received from NOAA server
 func parseTafNOAA(tafResponse string) (map[string][]string, error) {
-	aT := strings.Split(tafResponse, "\n")
 	mTafs := make(map[string][]string)
 
+	// Split response on EOL and store fields value in map
+	aT := strings.Split(tafResponse, "\n")
 	if aT[0] != "No errors" {
 		return mTafs, fmt.Errorf("Error TAF: NOAA weather server error: %s", aT[0])
 	}
