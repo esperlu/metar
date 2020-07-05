@@ -12,7 +12,7 @@ OPTIONS:
   -n  <n>         Set number of Metars to print per station. N: 1 to 70
   -s  <string>    Search IATA/ICAO code for an airport
   -lc <string>    List all countries with their ISO code (<string> may be empty: list all)
-  -la <string>    List all airports in one country (ISO country code)
+  -la <string>    List all airports in one or more countries (ISO country codes)
   -t  <t>         Connection timeout T: 1 to 10
   -r              Print raw data w/o the additional factors
   -m              METARS only
@@ -42,6 +42,10 @@ EXAMPLES:
   List all countries by ISO country code (2 characters)
     $ metar -lc
     $ metar -lc United
+  
+  List all airports in one or more countrises using country ISO code (case insensitive)
+    $ metar -la BE
+    $ metar -la pt es it
 
   For help (this screen)
     $ metar -h
@@ -1432,7 +1436,7 @@ var AdList = []string{
 	"PSA;LIRP;Pisa;IT",
 	"FLR;LIRQ;Florence (Firenze);IT",
 	"GRS;LIRS;Grosseto;IT",
-	"PEG;LIRZ;Perúgia;IT",
+	"PEG;LIRZ;Perugia;IT",
 	"LJU;LJLJ;Ljubljana;SI",
 	"MBX;LJMB;Maribor;SI",
 	"POW;LJPZ;Portoroz;SI",

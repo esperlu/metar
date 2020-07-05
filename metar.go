@@ -31,9 +31,9 @@ import (
 
 // Constants to fetch Weather reports from aviationweather.com
 const (
-	URL         = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
-	urlMETARfmt = URL + "&hoursBeforeNow=%.1f"
-	urlTAFfmt   = URL + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
+	URLfmt      = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
+	urlMETARfmt = URLfmt + "&hoursBeforeNow=%.1f"
+	urlTAFfmt   = URLfmt + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
 	ver         = "2.4"
@@ -41,14 +41,14 @@ const (
 
 // Initialize and parse flags
 var (
-	numberMetarFlagInt          = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
-	searchFlagBool              = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
-	listCountriesFlagBool       = flag.Bool("lc", false, "List all countries with ISO code")
-	listCountryAirportsFlagBool = flag.Bool("la", false, "List all for one country (ISO code)")
-	timeoutFlagInt              = flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
-	rawFlagBool                 = flag.Bool("r", false, "Print raw data w/o the additional factors")
-	metarOnlyFlagBool           = flag.Bool("m", false, "METARs only")
-	tafOnlyFlagBool             = flag.Bool("f", false, "TAF (forecast) only")
+	numberMetarFlag         = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
+	searchFlag              = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
+	listCountriesFlag       = flag.Bool("lc", false, "List all countries with ISO code")
+	listCountryAirportsFlag = flag.Bool("la", false, "List all for one country (ISO code)")
+	timeoutFlag             = flag.Int("t", 2, "Change the default timeout of 2 sec. to a maximum of 10 sec.")
+	rawFlag                 = flag.Bool("r", false, "Print raw data w/o the additional factors")
+	metarOnlyFlag           = flag.Bool("m", false, "METARs only")
+	tafOnlyFlag             = flag.Bool("f", false, "TAF (forecast) only")
 )
 
 func init() {
@@ -63,20 +63,20 @@ func main() {
 	startTotal := time.Now()
 
 	// If option search but no search pattern
-	if *searchFlagBool && len(flag.Args()) == 0 {
-		fmt.Printf("\n Asked for search, but no search pattern given. Quitting...\n  Try: metar -s munich or metar -s mun\n\n")
+	if *searchFlag && len(flag.Args()) == 0 {
+		fmt.Printf("\n Asked for search, but no search pattern given. Quitting...\n  Try: `metar -s munich` or `metar -s mun`\n\n")
 		return
 	}
 
 	// No args -> help screen
-	if !*listCountriesFlagBool && !*listCountryAirportsFlagBool && len(flag.Args()) == 0 {
-		fmt.Printf("\n  No airport(s) given. Quitting...\n  Try: metar MUC ebbr JFK (more examples below)\n\n")
+	if !*listCountriesFlag && !*listCountryAirportsFlag && len(flag.Args()) == 0 {
+		fmt.Printf("\n  No airport(s) given. Quitting...\n  Try: `metar MUC ebbr JFK` (more examples below)\n\n")
 		fmt.Println(data.Help)
 		return
 	}
 
 	// validate number of reports (INT)
-	if *numberMetarFlagInt <= 0 || *numberMetarFlagInt > maxNbMETAR {
+	if *numberMetarFlag <= 0 || *numberMetarFlag > maxNbMETAR {
 		fmt.Printf(
 			"\n  %s\n  %s\n\n",
 			"Invalid value for option -n (number of METARs).",
@@ -86,7 +86,7 @@ func main() {
 	}
 
 	// validate timeout flag (INT)
-	if *timeoutFlagInt < 1 || *timeoutFlagInt > maxTIMEOUT {
+	if *timeoutFlag < 1 || *timeoutFlag > maxTIMEOUT {
 		fmt.Printf(
 			"\n  %s\n  %s\n\n",
 			"Invalid value for option -t (connection timeout).",
@@ -95,55 +95,63 @@ func main() {
 		return
 	}
 
-	// Build key-values tables
-	// Table map[countryCode] -> []string{Country name, continent code}
-	mCode2Country := make(map[string][]string)
-	for _, line := range data.CountryList {
-		lineSplit := strings.Split(line, ";")
-		mCode2Country[lineSplit[1]] = []string{lineSplit[0], lineSplit[2]}
-
+	// options -m and -f mutually exclusive
+	if *metarOnlyFlag && *tafOnlyFlag {
+		fmt.Printf("\n options -m (metar only) and -f (taf only) are mutually exclusive. Nothing to print.\n\n")
+		return
 	}
 
-	// Table map[continetCode]-> continent name
-	mCode2Continent := make(map[string]string)
-	for _, line := range data.ContinentList {
+	// Option -la (list airports) needs arguments.
+	if *listCountryAirportsFlag && len(flag.Args()) == 0 {
+		fmt.Printf("\n %s\n %s\n\n",
+			"option -la (list country airports) needs at least one argument (country code)",
+			"Try: `metar -la BE` or for multiple countries: `metar FR CH PT`",
+		)
+		return
+	}
+
+	// Build key-values tables
+	// Table map[countryCode] -> []string{Country name, continent code}
+	code2Country := make(map[string][]string)
+	for _, line := range data.CountryList {
 		lineSplit := strings.Split(line, ";")
-		mCode2Continent[lineSplit[0]] = string(lineSplit[1])
+		code2Country[lineSplit[1]] = []string{lineSplit[0], lineSplit[2]}
+
 	}
 
 	// Table map[iata]=>(icao) and map[icao]=>(airport)+(details)
-	mIata2Icao := make(map[string]string)
-	mIcao2AirportInfos := make(map[string]string)
+	iata2Icao := make(map[string]string)
+	icao2AirportInfos := make(map[string]string)
 	for _, line := range data.AdList {
 		lineSplit := strings.Split(string(line), ";")
-		mIata2Icao[lineSplit[0]] = lineSplit[1]
-		mIcao2AirportInfos[lineSplit[1]] = fmt.Sprintf(
+		iata2Icao[lineSplit[0]] = lineSplit[1]
+		icao2AirportInfos[lineSplit[1]] = fmt.Sprintf(
 			"%s (%s) %s, %s %s (%s)",
 			lineSplit[1],
 			lineSplit[0],
 			lineSplit[2],
-			mCode2Country[lineSplit[3]][0],
+			code2Country[lineSplit[3]][0],
 			lineSplit[3],
-			mCode2Country[lineSplit[3]][1],
+			code2Country[lineSplit[3]][1],
 		)
 	}
 
 	// search option -s
-	if *searchFlagBool {
-		fmt.Printf("\n%s\n", searchAirport2(mIcao2AirportInfos, strings.Join(flag.Args(), " ")))
+	if *searchFlag {
+		fmt.Printf("\n%s\n", searchAirport2(icao2AirportInfos, strings.Join(flag.Args(), " ")))
 		fmt.Printf("  Processed in %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
 
 	// List country ISO codes
-	if *listCountriesFlagBool {
+	if *listCountriesFlag {
 		fmt.Printf("\n%s\n", listCountries(strings.Join(flag.Args(), " ")))
 		fmt.Printf("  Processed in %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
 
 	// List country airports
-	if *listCountryAirportsFlagBool {
+	if *listCountryAirportsFlag {
 		if len(flag.Args()[0]) != 2 {
 			fmt.Printf(
 				"\n  %s\n  %s\n  %s\n\n",
@@ -153,29 +161,29 @@ func main() {
 			)
 			return
 		}
-		fmt.Printf("\n%s\n", listAirports(flag.Args(), mCode2Country))
+		fmt.Printf("\n%s\n", listAirports(flag.Args(), code2Country))
 		fmt.Printf("  Processed in %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
 
 	// Parse airport list and convert IATA code (3 char.) to ICAO code (4 char.)
-	var sStations []string
+	var stations []string
 	for _, v := range flag.Args() {
 		v = strings.ToUpper(v)
 		fmtNotFound := "\n  \"%s\" not found. Try to run: metar -s %[1]s\n"
 
 		switch len(v) {
-		// if IATA airport code (3 char.), lookup the mIata2Icao map
+		// if IATA airport code (3 char.), lookup the iata2Icao map
 		case 3:
-			if _, ok := mIata2Icao[v]; ok {
-				sStations = append(sStations, mIata2Icao[v])
+			if _, ok := iata2Icao[v]; ok {
+				stations = append(stations, iata2Icao[v])
 			} else {
 				fmt.Printf(fmtNotFound, v)
 			}
-		// if ICAO airport code (4 char.), lookup the mIcao2AirportInfos map
+		// if ICAO airport code (4 char.), lookup the icao2AirportInfos map
 		case 4:
-			if _, ok := mIcao2AirportInfos[v]; ok {
-				sStations = append(sStations, v)
+			if _, ok := icao2AirportInfos[v]; ok {
+				stations = append(stations, v)
 			} else {
 				fmt.Printf(fmtNotFound, v)
 			}
@@ -185,13 +193,13 @@ func main() {
 	}
 
 	// if no station to process --> exit
-	if len(sStations) == 0 {
+	if len(stations) == 0 {
 		fmt.Print("\n  Nothing to fetch. Quitting...\n\n")
 		return
 	}
 
 	// prepare the station list string for the URL
-	stationList := strings.Join(sStations, "%20")
+	stationList := strings.Join(stations, "%20")
 
 	// Start download timer
 	startDownload := time.Now()
@@ -201,21 +209,21 @@ func main() {
 	var errM, errT error
 
 	// get METARs routine (arg[4]--> 2 METARs per hour + 30 minutes)
-	urlM := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlagInt)/2+0.5)
-	// urlM = "http://gaubert/metar/metar.php?type=mo"
+	urlM := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlag)/2+0.5)
+	urlM = "http://gaubert/metar/metar.php?type=mo"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		metarResponse, errM = wget(urlM, *timeoutFlagInt)
+		metarResponse, errM = wget(urlM, *timeoutFlag)
 	}()
 
 	// get TAFS routine
 	urlT := fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
-	// urlT = "http://gaubert/metar/metar.php?type=to"
+	urlT = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		tafResponse, errT = wget(urlT, *timeoutFlagInt)
+		tafResponse, errT = wget(urlT, *timeoutFlag)
 	}()
 
 	// Wait for all go routines to finish
@@ -225,20 +233,20 @@ func main() {
 		fmt.Printf("\n%s\n\n", checkWgetErr(errM))
 		return
 	}
-	if errT != nil && !*metarOnlyFlagBool {
+	if errT != nil && !*metarOnlyFlag {
 		fmt.Printf("\n%s\n\n", checkWgetErr(errT))
 		return
 	}
 
 	// parse responses
-	mMetars, err := parseMetarNOAA(metarResponse)
+	metars, err := parseMetarNOAA(metarResponse)
 	if err != nil {
 		fmt.Println("\n", err)
 	}
 
-	// var mTafs map[string][]string
-	if !*metarOnlyFlagBool {
-		mTafs, err := parseTafNOAA(tafResponse)
+	var tafs map[string][]string
+	if !*metarOnlyFlag {
+		tafs, err = parseTafNOAA(tafResponse)
 		if err != nil {
 			fmt.Println("\n", err)
 		}
@@ -248,17 +256,17 @@ func main() {
 	downloadTime := time.Since(startDownload).Seconds()
 
 	// final print to terminal
-	for _, v := range sStations {
+	for _, v := range stations {
 
 		// Airport title or separator (raw option)
-		if !*rawFlagBool {
-			fmt.Printf("\n%s\n", mIcao2AirportInfos[v])
+		if !*rawFlag {
+			fmt.Printf("\n%s\n", icao2AirportInfos[v])
 		}
 
 		// print METARs
-		if !*tafOnlyFlagBool {
-			if len(mMetars[v]) != 0 {
-				for _, vv := range mMetars[v] {
+		if !*tafOnlyFlag {
+			if len(metars[v]) != 0 {
+				for _, vv := range metars[v] {
 					fmt.Printf("%s\n", vv)
 				}
 			} else {
@@ -266,10 +274,10 @@ func main() {
 			}
 		}
 
-		if !*metarOnlyFlagBool {
+		if !*metarOnlyFlag {
 			// print TAFs
-			if len(mTafs[v]) != 0 {
-				fmt.Printf("%s\n", mTafs[v][0])
+			if len(tafs[v]) != 0 {
+				fmt.Printf("%s\n", tafs[v][0])
 			} else {
 				fmt.Println("No TAF received for this station")
 			}
@@ -277,7 +285,7 @@ func main() {
 	}
 
 	// print timing (not for raw output)
-	if !*rawFlagBool {
+	if !*rawFlag {
 		totalTime := time.Since(startTotal).Seconds()
 		fmt.Printf("\n%s | Download: %.3f sec. | Process: %.3f sec. | Total: %.3f sec.\n",
 			ver,
@@ -378,10 +386,10 @@ func computeFactors(wind float64, temp float64, dew float64) (float64, float64, 
 }
 
 // searchAirport searches airport in airport data list
-func searchAirport2(mIcao2AirportInfos map[string]string, countryCodes string) string {
+func searchAirport2(icao2AirportInfos map[string]string, countryCodes string) string {
 	var list string
 	countryCodes = strings.ToUpper(countryCodes)
-	for _, line := range mIcao2AirportInfos {
+	for _, line := range icao2AirportInfos {
 		if strings.Contains(strings.ToUpper(line), countryCodes) {
 			list += fmt.Sprintf("  %s\n", line)
 		}
@@ -461,7 +469,7 @@ func parseMetarNOAA(metarResponse string) (map[string][]string, error) {
 		id := fields[1]
 
 		// loop if maximum number of METAR si reached for one station
-		if len(mMetars[id]) >= *numberMetarFlagInt {
+		if len(mMetars[id]) >= *numberMetarFlag {
 			continue
 		}
 
@@ -469,14 +477,14 @@ func parseMetarNOAA(metarResponse string) (map[string][]string, error) {
 		nonEmptyFields := (fields[5] != "" && fields[6] != "" && fields[8] != "")
 
 		// If raw not requested, compute wind chill factor, heat factor and relative humidity
-		if !*rawFlagBool && nonEmptyFields {
+		if !*rawFlag && nonEmptyFields {
 			temp, _ := strconv.ParseFloat(fields[5], 64)
 			dew, _ := strconv.ParseFloat(fields[6], 64)
 			wind, _ := strconv.ParseFloat(fields[8], 64)
 			wc, hf, rh := computeFactors(wind, temp, dew)
 			factors = fmt.Sprintf(" [%.0f %.0f %.0f%%]", wc, hf, rh)
 			raw += factors
-		} else if *rawFlagBool && !nonEmptyFields {
+		} else if *rawFlag && !nonEmptyFields {
 			raw = "M:" + raw
 		}
 		mMetars[id] = append(mMetars[id], raw)
@@ -517,7 +525,7 @@ func parseTafNOAA(tafResponse string) (map[string][]string, error) {
 		// Store TAF in mTafs map
 		raw := fields[5:]
 		header := "TAF "
-		if *rawFlagBool {
+		if *rawFlag {
 			header = "T:" + id + " "
 		}
 		mTafs[id] = append(mTafs[id], header+raw)
