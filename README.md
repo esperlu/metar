@@ -36,7 +36,8 @@ $ metar -s new york
 -n <N>  number of metar to print (min. 1, max. 70)
 -t <T>  connection timeout in sec. (min.1 max 10)
 -r      raw output (no airport header and no additional factors)
--m      METAR only output
+-m      METAR only
+-f      TAF (forecast) only
 ```
 Example:   ```$ metar -r -n 15 bru jfk``` prints the latest 15 metars in raw format
 

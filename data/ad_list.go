@@ -11,7 +11,6 @@ AIRPORT LIST:
 OPTIONS:
   -n  <n>         Set number of Metars to print per station. N: 1 to 70
   -s  <string>    Search IATA/ICAO code for an airport
-  -sc <string>    Search by country ISO 2 char. code (use -lc to list all countries)
   -lc <string>    List all countries with their ISO code (<string> may be empty: list all)
   -la <string>    List all airports in one country (ISO country code)
   -t  <t>         Connection timeout T: 1 to 10
