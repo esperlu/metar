@@ -4,6 +4,19 @@ This go program fetch the aviation METAR's and TAF's for a given list of airport
 
 As an addition to the METAR messages, Wind Chill factor, Heat Factor and Relative Humidity are computed when applicable.
 
+## Options
+
+```
+  -n  <n>         Set number of Metars to print per station. N: 1 to 70
+  -s  <string>    Search IATA/ICAO code for an airport
+  -lc <string>    List all countries with their ISO code (<string> may be empty)
+  -la <string>    List all airports in one or more countries (ISO country codes)
+  -t  <t>         Connection timeout T: 1 to 10
+  -r              Print raw data w/o the additional factors
+  -m              METARS only (mutually exclusive with -f)
+  -f              TAFS only (mutually exclusive with -m)
+  -h              This help screen
+```
 
 ## Retrieve messages for a list of stations (IATA or ICAO codes)
 
@@ -30,18 +43,19 @@ $ metar -s munich
 $ metar -s new york
 ```
 
-## Options
+## List ISO country codes
 
 ```
--n <N>  number of metar to print (min. 1, max. 70)
--t <T>  connection timeout in sec. (min.1 max 10)
--r      raw output (no airport header and no additional factors)
--m      METAR only
--f      TAF (forecast) only
+$ metar -lc
+$ metar -lc africa
+
 ```
-Example:   ```$ metar -r -n 15 bru jfk``` prints the latest 15 metars in raw format
 
-
+## List all country airports using ISO country codes
+```
+$ metar -la fr
+$ metar -la it pt es uk
+```
 ## Help screen
 
 ```$ metar -h```
@@ -89,5 +103,5 @@ Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/i
 ## Credits
 These aviation weather messages are retrieved from http://aviationweather.gov in real time.
 
-## Author
-Jean-Luc Lacroix
+---
+#### (c) Jean-Luc Lacroix

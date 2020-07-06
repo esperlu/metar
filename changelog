@@ -1,7 +1,12 @@
-2020-06-17
+2020-07-06 (v2.4)
+* added -m and -f options (METAR or TAF only)
+* added -lc and -la options (list countrues and list country airports)
+* various cleanups and refactoring.
+
+2020-06-17 (v2.3)
 * added "super raw" output option (-rr)
 
-2020-06-07
+2020-06-07 (v2.1)
 * added a couple of new stations
 * changed maximum number of METARs to 70
 * changed default timeout to 2 sec.
