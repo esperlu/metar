@@ -118,23 +118,37 @@ func main() {
 		code2country[lineSplit[1]] = []string{lineSplit[0], lineSplit[2]}
 
 	}
+	// for k, v := range code2country {
+	// 	fmt.Printf("[%s] %s\n", k, v)
+	// }
+	// return
 
 	// Table map[iata]=>(icao) and map[icao]=>(airport)+(details)
 	iata2icao := make(map[string]string)
 	icao2airportInfos := make(map[string]string)
 	for _, line := range data.AdList {
+		// fmt.Println(line)
 		lineSplit := strings.Split(string(line), ";")
-		iata2icao[lineSplit[0]] = lineSplit[1]
-		icao2airportInfos[lineSplit[1]] = fmt.Sprintf(
+		iata2icao[lineSplit[1]] = lineSplit[0]
+		// empty iata code
+		if lineSplit[1] == "" {
+			lineSplit[1] = "---"
+		}
+		icao2airportInfos[lineSplit[0]] = fmt.Sprintf(
 			"%s (%s) %s, %s %s (%s)",
-			lineSplit[1],
 			lineSplit[0],
+			lineSplit[1],
 			lineSplit[2],
 			code2country[lineSplit[3]][0],
 			lineSplit[3],
 			code2country[lineSplit[3]][1],
 		)
 	}
+
+	// for k, v := range icao2airportInfos {
+	// 	fmt.Printf("[%s] %s\n", k, v)
+	// }
+	// return
 
 	// search option -s
 	if *searchFlag {
@@ -432,7 +446,7 @@ func listAirports(countryCodes []string, code2country map[string][]string) strin
 		for _, line := range data.AdList {
 			splitLine := strings.Split(line, ";")
 			if code == splitLine[3] {
-				countryAdList += fmt.Sprintf("  %s %s %s %s\n", splitLine[1], splitLine[0], splitLine[3], splitLine[2])
+				countryAdList += fmt.Sprintf("  %s %-3s %s %s\n", splitLine[0], splitLine[1], splitLine[3], splitLine[2])
 			}
 		}
 		if countryAdList != "" {
