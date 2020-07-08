@@ -1,3 +1,6 @@
+2020-07-08 (v2.4.1)
+* added all wheather stations listed by NOAA including non-airport stations
+
 2020-07-06 (v2.4)
 * added -m and -f options (METAR or TAF only)
 * added -lc and -la options (list countrues and list country airports)
