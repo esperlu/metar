@@ -25,8 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"./data"
-	// "github.com/esperlu/metar/data"
+	"github.com/esperlu/metar/data"
 )
 
 // Constants to fetch Weather reports from aviationweather.com
@@ -224,7 +223,7 @@ func main() {
 
 	// get METARs routine (arg[4]--> 2 METARs per hour + 30 minutes)
 	urlM := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlag)/2+0.5)
-	// urlM = "http://gaubert/metar/metar.php?type=mo"
+	urlM = "http://gaubert/metar/metar.php?type=mo"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -233,7 +232,7 @@ func main() {
 
 	// get TAFS routine
 	urlT := fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
-	// urlT = "http://gaubert/metar/metar.php?type=to"
+	urlT = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
