@@ -52,7 +52,7 @@ func main() {
 		}
 
 		lines := strings.Split(s, "\n")
-		// Traverse lines (skip 42 lines)
+		// Traverse lines
 		for _, l := range lines {
 			// Skip titles
 			if len(l) != 83 {
