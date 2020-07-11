@@ -28,9 +28,13 @@ type st struct {
 }
 
 const (
-	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
-	noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
-	ourairportsURL string = "https://ourairports.com/data/airports.csv"
+	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ff.go"
+	noaaURL        string = "http://gaubert/metar/stations.txt"
+	ourairportsURL string = "http://gaubert/metar/airports.csv"
+
+	// dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
+	// noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
+	// ourairportsURL string = "https://ourairports.com/data/airports.csv"
 )
 
 func main() {
@@ -52,7 +56,7 @@ func main() {
 		}
 
 		lines := strings.Split(s, "\n")
-		// Traverse lines
+		// Traverse lines (skip 42 lines)
 		for _, l := range lines {
 			// Skip titles
 			if len(l) != 83 {
@@ -144,16 +148,14 @@ func main() {
 	}
 	f.Truncate(int64(bytesRead))
 
-	// store all records in a string
-	var l string
+	// store all records in a file
 	for _, v := range final {
-		l += fmt.Sprintf("\t\"%s;%s;%s;%s\",\n", v.Icao, v.Iata, v.Name, v.Country)
+		if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s\",\n", v.Icao, v.Iata, v.Name, v.Country)); err != nil {
+			log.Fatal(err)
+		}
 	}
-	l += "}\n"
-
-	// append string to file
-	if _, err := f.WriteString(l); err != nil {
-		log.Println(err)
+	if _, err := f.WriteString("}\n"); err != nil {
+		log.Fatal(err)
 	}
 
 	fmt.Printf(
@@ -178,7 +180,6 @@ func wget(urlString string, wgetTimeout int) (string, error) {
 
 	// unwrap url.error and check error and its type
 	if e, ok := err.(*url.Error); ok && e.Timeout() {
-		// return "", fmt.Errorf("Timeout")
 		return "", e.Unwrap()
 	} else if err != nil {
 		return "", err
