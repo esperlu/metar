@@ -178,7 +178,6 @@ func wget(urlString string, wgetTimeout int) (string, error) {
 
 	// unwrap url.error and check error and its type
 	if e, ok := err.(*url.Error); ok && e.Timeout() {
-		// return "", fmt.Errorf("Timeout")
 		return "", e.Unwrap()
 	} else if err != nil {
 		return "", err
