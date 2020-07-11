@@ -28,7 +28,7 @@ type st struct {
 }
 
 const (
-	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
+	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metar/data/ad_list.go"
 	noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
 	ourairportsURL string = "https://ourairports.com/data/airports.csv"
 )
@@ -144,7 +144,7 @@ func main() {
 	}
 	f.Truncate(int64(bytesRead))
 
-	// store all records in a file
+	// store all records in file
 	for _, v := range final {
 		if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s\",\n", v.Icao, v.Iata, v.Name, v.Country)); err != nil {
 			log.Fatal(err)
