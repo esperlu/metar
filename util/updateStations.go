@@ -28,13 +28,9 @@ type st struct {
 }
 
 const (
-	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ff.go"
-	noaaURL        string = "http://gaubert/metar/stations.txt"
-	ourairportsURL string = "http://gaubert/metar/airports.csv"
-
-	// dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
-	// noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
-	// ourairportsURL string = "https://ourairports.com/data/airports.csv"
+	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
+	noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
+	ourairportsURL string = "https://ourairports.com/data/airports.csv"
 )
 
 func main() {
