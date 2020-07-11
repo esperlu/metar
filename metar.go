@@ -17,6 +17,8 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+
+	// "jeanluc/metarDEV/data"
 	"math"
 	"net/http"
 	"net/url"
@@ -25,8 +27,7 @@ import (
 	"sync"
 	"time"
 
-	"./data"
-	// "github.com/esperlu/metar/data"
+	"github.com/esperlu/metar/data"
 )
 
 // Constants to fetch Weather reports from aviationweather.com

@@ -101,7 +101,8 @@ To run it (Linux and Mac): `$ ./metar`
 Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/issues) any bugs.
 
 ## Credits
-These aviation weather messages are retrieved from http://aviationweather.gov in real time.
+METAR weather messages are retrieved from http://aviationweather.gov in real time.
+METAR station list and names are compiled from and aviationweather.gov and ourairports.com
 
 ---
 #### (c) Jean-Luc Lacroix
