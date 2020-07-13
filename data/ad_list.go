@@ -1,4 +1,6 @@
-//Package data exports Help and AdList variables
+/*
+Package data exports Help and AdList variables
+*/
 package data
 
 // Help screen

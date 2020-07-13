@@ -1,11 +1,10 @@
 // This program updates the METAR stations list.
-//
+
 // It compiles lists from NOAA and ourairports.com web sites.
 // Change `dataFile` assigment here below to the actual path where your `ad_list.go` file lives.
 // Once updated, you will need to recompile or run metar.go to hardcode the updated stations into the metar binary.
-//
+
 // Warning: do not change the var declaration `var AdList` in ad_list.go as it works as a marker for this program.
-//
 package main
 
 import (
@@ -23,8 +22,9 @@ import (
 	"time"
 )
 
-type st struct {
-	Name, Icao, Iata, Country string
+// station stores METAR station details
+type station struct {
+	name, icao, iata, country string
 }
 
 const (
@@ -39,8 +39,8 @@ const (
 
 func main() {
 
-	stationsNOAA := make(map[string]st)
-	stationsLIST := make(map[string]st)
+	stationsNOAA := make(map[string]station)
+	stationsLIST := make(map[string]station)
 	var wg sync.WaitGroup
 
 	start := time.Now()
@@ -51,42 +51,36 @@ func main() {
 		defer wg.Done()
 		s, err := wget(noaaURL, 5)
 		if err != nil {
-			fmt.Printf("\n file %s %v\n\n", noaaURL, err)
-			os.Exit(1)
+			log.Fatalf("\n\n file %s\n %v\n\n", noaaURL, err)
 		}
 
 		lines := strings.Split(s, "\n")
-		// Traverse lines (skip 42 lines)
+		// Traverse lines
 		for _, l := range lines {
-			// Skip titles
-			if len(l) != 83 {
+			// Skip titles, non METAR stations and stations w/o icao code
+			if len(l) != 83 || string(l[62]) != "X" || strings.TrimSpace(l[20:24]) == "" {
 				continue
 			}
-			// Skip stations without METAR reports and stations witout ICAO code
+			// Store station ident in map[icao]station
 			// Note: iata code is in fact the FAA code. Not usable.
-			if string(l[62]) == "X" && strings.TrimSpace(l[20:24]) != "" {
-				stationsNOAA[strings.TrimSpace(l[20:24])] = st{
-					Name:    strings.TrimSpace(l[3:20]),
-					Icao:    strings.TrimSpace(l[20:24]),
-					Country: l[81:83],
-				}
+			stationsNOAA[strings.TrimSpace(l[20:24])] = station{
+				name:    strings.TrimSpace(l[3:20]),
+				icao:    strings.TrimSpace(l[20:24]),
+				country: l[81:83],
 			}
-
 		}
 		if len(stationsNOAA) == 0 {
-			fmt.Printf("\n %s file not valid.\n No valid record found.\n\n", noaaURL)
-			os.Exit(1)
+			log.Fatalf("\n\n %s file not valid.\n No valid record found.\n\n", noaaURL)
 		}
 	}()
 
-	// get and process ourairport file
+	// get and process ourairport csv file
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		s, err := wget(ourairportsURL, 5)
 		if err != nil {
-			fmt.Printf("\n file %s %v\n\n", ourairportsURL, err)
-			os.Exit(1)
+			log.Fatalf("\n\n file %s\n %v\n\n", ourairportsURL, err)
 		}
 
 		// make a new reader from string `s`
@@ -96,39 +90,37 @@ func main() {
 		// parse all csv lines
 		lines, err := r.ReadAll()
 		if err != nil {
-			fmt.Printf("\n %s file not valid. Expecting 18 fields\n %v\n\n", ourairportsURL, err)
-			os.Exit(1)
+			log.Fatalf("\n\n %s file not valid. Expecting 18 fields\n %v\n\n", ourairportsURL, err)
 		}
 		for _, l := range lines {
 			// remove possible remaining `"` in airport name
 			l[3] = strings.ReplaceAll(l[3], "\"", "")
-			stationsLIST[l[1]] = st{
-				Name:    l[3] + " (" + l[10] + ")",
-				Icao:    l[1],
-				Iata:    l[13],
-				Country: l[8],
+			stationsLIST[l[1]] = station{
+				name:    l[3] + " (" + l[10] + ")",
+				icao:    l[1],
+				iata:    l[13],
+				country: l[8],
 			}
 		}
 	}()
 
+	// wait for all go routines to finish
 	wg.Wait()
 
 	// print stations from NOAA with details taken in LIST if exists (else use NOAA names and codes)
-	var final []st
+	var final []station
 	for _, vNOAA := range stationsNOAA {
-		if vLIST, ok := stationsLIST[vNOAA.Icao]; ok {
-			final = append(final, st{Iata: vLIST.Iata, Icao: vLIST.Icao, Name: vLIST.Name, Country: vLIST.Country})
+		if vLIST, ok := stationsLIST[vNOAA.icao]; ok {
+			final = append(final, station{iata: vLIST.iata, icao: vLIST.icao, name: vLIST.name, country: vLIST.country})
 		} else {
-			final = append(final, st{Icao: vNOAA.Icao, Name: vNOAA.Name, Country: vNOAA.Country})
+			final = append(final, station{icao: vNOAA.icao, name: vNOAA.name, country: vNOAA.country})
 		}
-
 	}
 
-	// Sort `final` on Icao code
-	sort.Slice(final, func(i, j int) bool { return final[i].Icao < final[j].Icao })
+	// Sort `final` on icao code
+	sort.Slice(final, func(i, j int) bool { return final[i].icao < final[j].icao })
 
-	// Add final to data file
-	// Append to metarDEV/data/ad_list.go
+	// Add `final` to data file `ad_list.go`
 	f, err := os.OpenFile(dataFile, os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatal(err)
@@ -138,19 +130,19 @@ func main() {
 	// delete lines after `var AdList = []string{`
 	scanner := bufio.NewScanner(f)
 	var bytesRead int
-	// find line containing `var AdList`
+	// find line containing `var AdList` and count bytes read (+1 for \n)
 	for scanner.Scan() {
-		// bytes read so far (+1 for \n)
-		bytesRead += len(scanner.Text()) + 1
-		if strings.Contains(scanner.Text(), "var AdList") {
+		t := scanner.Text()
+		bytesRead += len(t) + 1
+		if strings.Contains(t, "var AdList") {
 			break
 		}
 	}
 	f.Truncate(int64(bytesRead))
 
-	// store all records in a file
+	// store all records in file
 	for _, v := range final {
-		if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s\",\n", v.Icao, v.Iata, v.Name, v.Country)); err != nil {
+		if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s\",\n", v.icao, v.iata, v.name, v.country)); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -167,7 +159,7 @@ func main() {
 }
 
 /*
-	FUNC
+	FUNC's
 */
 
 func wget(urlString string, wgetTimeout int) (string, error) {
@@ -198,7 +190,6 @@ func wget(urlString string, wgetTimeout int) (string, error) {
 		return "", err
 	}
 
-	// return string(wgetAnswer), nil
 	// return output (after removing trailing \n)
 	return string(wgetAnswer[:len(wgetAnswer)-1]), nil
 }
