@@ -1,22 +1,23 @@
 // metar is a go program to fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
-//
+
 // Usage:
 // Retrieve messages for a list of stations (IATA or ICAO codes):
-//		$ metar lhr jfk bru uudd
+// 		$ metar lhr jfk bru uudd
 // Find the IATA/ICAO airport code for an airport
-//		$ metar -s munich
-//		$ metar -s new york
+// 		$ metar -s munich
+// 		$ metar -s new york
 // Help screen for other options:
-//		$ metar -h
+// 		$ metar -h
 // Bug reports:
 // https://github.com/esperlu/metar/issues
-
 package main
 
 import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+
+	// "jeanluc/metarDEV/data"
 	"math"
 	"net/http"
 	"net/url"
@@ -223,6 +224,7 @@ func main() {
 
 	// get METARs routine (arg[4]--> 2 METARs per hour + 30 minutes)
 	urlM := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlag)/2+0.5)
+	// urlM = "http://gaubert/metar/metar.php?type=mo"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -231,6 +233,7 @@ func main() {
 
 	// get TAFS routine
 	urlT := fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
+	// urlT = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -368,7 +371,7 @@ func computeFactors(wind float64, temp float64, dew float64) (float64, float64, 
 
 	// Relative Humidity (rh)
 	tf := temp*1.8 + 32
-	rh := 100 * math.Pow((112-0.1*temp+dew)/(112+0.9*temp), 8)
+	rh := 100 * math.Pow((-0.1*temp+dew+112)/(0.9*temp+112), 8)
 
 	// Heat Factor (if within limits)
 	var hf float64
