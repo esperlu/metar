@@ -28,7 +28,7 @@ type station struct {
 }
 
 const (
-	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metar/data/ad_list.go"
+	dataFile       string = "../data/ad_list.go"
 	noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
 	ourairportsURL string = "https://ourairports.com/data/airports.csv"
 )
