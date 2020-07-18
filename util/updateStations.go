@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -25,11 +26,13 @@ import (
 // station stores METAR station details
 type station struct {
 	name, icao, iata, country string
+	lat, long                 float64
 }
 
 const (
-	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ff.go"
-	noaaURL        string = "http://gaubert/metar/stations.txt"
+	dataFile string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
+	noaaURL  string = "http://gaubert/metar/stations.txt"
+	// noaaURL        string = "http://regains.be/metar/stations.txt"
 	ourairportsURL string = "http://gaubert/metar/airports.csv"
 
 	// dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
@@ -51,7 +54,7 @@ func main() {
 		defer wg.Done()
 		s, err := wget(noaaURL, 5)
 		if err != nil {
-			log.Fatalf("\n\n file %s\n %v\n\n", noaaURL, err)
+			log.Fatal(httpError(err))
 		}
 
 		lines := strings.Split(s, "\n")
@@ -61,12 +64,16 @@ func main() {
 			if len(l) != 83 || string(l[62]) != "X" || strings.TrimSpace(l[20:24]) == "" {
 				continue
 			}
+			// convert degree/min to dec (999.0 if err)
+			lt, lg := deg2dec(l[39:46], l[47:55])
 			// Store station ident in map[icao]station
 			// Note: iata code is in fact the FAA code. Not usable.
 			stationsNOAA[strings.TrimSpace(l[20:24])] = station{
 				name:    strings.TrimSpace(l[3:20]),
 				icao:    strings.TrimSpace(l[20:24]),
 				country: l[81:83],
+				lat:     lt,
+				long:    lg,
 			}
 		}
 		if len(stationsNOAA) == 0 {
@@ -80,7 +87,7 @@ func main() {
 		defer wg.Done()
 		s, err := wget(ourairportsURL, 5)
 		if err != nil {
-			log.Fatalf("\n\n file %s\n %v\n\n", ourairportsURL, err)
+			log.Fatal(httpError(err))
 		}
 
 		// make a new reader from string `s`
@@ -92,14 +99,26 @@ func main() {
 		if err != nil {
 			log.Fatalf("\n\n %s file not valid. Expecting 18 fields\n %v\n\n", ourairportsURL, err)
 		}
-		for _, l := range lines {
+		for _, l := range lines[1:] {
 			// remove possible remaining `"` in airport name
 			l[3] = strings.ReplaceAll(l[3], "\"", "")
+			// parse and conv coord. 999.0 if err
+			lt, errLt := strconv.ParseFloat(l[4], 64)
+			lg, errLg := strconv.ParseFloat(l[5], 64)
+			if errLt != nil || errLg != nil {
+				lt, lg = 999.0, 999.0
+			}
+			// if `municipality` not empty
+			if l[10] != "" {
+				l[10] = " (" + l[10] + ")"
+			}
 			stationsLIST[l[1]] = station{
-				name:    l[3] + " (" + l[10] + ")",
+				name:    l[3] + l[10],
 				icao:    l[1],
 				iata:    l[13],
 				country: l[8],
+				lat:     lt,
+				long:    lg,
 			}
 		}
 	}()
@@ -111,9 +130,14 @@ func main() {
 	var final []station
 	for _, vNOAA := range stationsNOAA {
 		if vLIST, ok := stationsLIST[vNOAA.icao]; ok {
-			final = append(final, station{iata: vLIST.iata, icao: vLIST.icao, name: vLIST.name, country: vLIST.country})
+			// no valid lat-long in vLIST --> take NOAA lat-long
+			if vLIST.lat == 999.0 {
+				vLIST.lat = vNOAA.lat
+				vLIST.long = vNOAA.long
+			}
+			final = append(final, vLIST)
 		} else {
-			final = append(final, station{icao: vNOAA.icao, name: vNOAA.name, country: vNOAA.country})
+			final = append(final, vNOAA)
 		}
 	}
 
@@ -140,9 +164,10 @@ func main() {
 	}
 	f.Truncate(int64(bytesRead))
 
-	// store all records in file
+	// store all records in file (option: add lat-long)
 	for _, v := range final {
-		if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s\",\n", v.icao, v.iata, v.name, v.country)); err != nil {
+		if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s;%.3f;%.3f\",\n", v.icao, v.iata, v.name, v.country, v.lat, v.long)); err != nil {
+			// if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s\",\n", v.icao, v.iata, v.name, v.country)); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -163,7 +188,6 @@ func main() {
 */
 
 func wget(urlString string, wgetTimeout int) (string, error) {
-
 	timeout := time.Duration(wgetTimeout) * time.Second
 	client := http.Client{Timeout: timeout}
 
@@ -171,25 +195,66 @@ func wget(urlString string, wgetTimeout int) (string, error) {
 	res, err := client.Get(urlString)
 
 	// unwrap url.error and check error and its type
-	if e, ok := err.(*url.Error); ok && e.Timeout() {
-		return "", e.Unwrap()
-	} else if err != nil {
+	if err != nil {
 		return "", err
 	}
 	defer res.Body.Close()
 
 	// if not HTTP 200 OK in response header
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf(" Page not found")
+		err := new(url.Error)
+		*err = url.Error{
+			Op:  "Get",
+			URL: urlString,
+			Err: fmt.Errorf("HTTP error: %s", http.StatusText(res.StatusCode)),
+		}
+		return "", err
 	}
 
 	// return res.Body, nil
-
 	wgetAnswer, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		err := new(url.Error)
+		*err = url.Error{
+			Op:  "Get",
+			URL: urlString,
+			Err: fmt.Errorf("Error reading response body"),
+		}
+
 	}
 
 	// return output (after removing trailing \n)
 	return string(wgetAnswer[:len(wgetAnswer)-1]), nil
+}
+
+// httpError format (unwrap) url.Error returned by func wget
+func httpError(err error) string {
+	return fmt.Sprintf("\n\n Error: %s %s\n %v\n\n",
+		err.(*url.Error).Op,
+		err.(*url.Error).URL,
+		err.(*url.Error).Err,
+	)
+}
+
+// deg2dec convert degree/min string coord. `61 10N  150 30W` ---> dec: `61.17 -150.50`
+// return 999.0 if err
+func deg2dec(lat, long string) (lt, lg float64) {
+	latd, err := strconv.ParseFloat(lat[:2], 64)
+	latm, err := strconv.ParseFloat(lat[3:5], 64)
+	longd, err := strconv.ParseFloat(long[:3], 64)
+	longm, err := strconv.ParseFloat(long[4:6], 64)
+	if err != nil {
+		return 999.0, 999.0
+	}
+
+	lt = latd + latm/60
+	lg = longd + longm/60
+
+	if string(lat[5]) == "S" {
+		lt *= -1
+	}
+	if string(long[6]) == "W" {
+		lg *= -1
+	}
+	return lt, lg
 }

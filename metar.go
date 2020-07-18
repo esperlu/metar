@@ -16,6 +16,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"jeanluc/metarDEV/data"
 
 	// "jeanluc/metarDEV/data"
 	"math"
@@ -25,8 +26,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/esperlu/metar/data"
+	// "github.com/esperlu/metar/data"
 )
 
 // Constants to fetch Weather reports from aviationweather.com
@@ -409,7 +409,7 @@ func searchAirport(icao2airportInfos map[string]string, countryCodes string) str
 		}
 	}
 	if list == "" {
-		return fmt.Sprintf("  Nothing found for: '%s'\n", countryCodes)
+		return fmt.Sprintf("  No METAR station found for: '%s'\n", countryCodes)
 	}
 	return list
 }
@@ -446,7 +446,13 @@ func listAirports(countryCodes []string, code2country map[string][]string) strin
 		for _, line := range data.AdList {
 			splitLine := strings.Split(line, ";")
 			if code == splitLine[3] {
-				countryAdList += fmt.Sprintf("  %s %-3s %s %s\n", splitLine[0], splitLine[1], splitLine[3], splitLine[2])
+				countryAdList += fmt.Sprintf(
+					"  %s %-3s %s %s\n",
+					splitLine[0],
+					splitLine[1],
+					splitLine[3],
+					splitLine[2],
+				)
 			}
 		}
 		if countryAdList != "" {
@@ -454,7 +460,7 @@ func listAirports(countryCodes []string, code2country map[string][]string) strin
 		}
 	}
 	if list == "" {
-		return "  Nothing found.\n"
+		return "  No METAR station found.\n"
 	}
 	return list
 
