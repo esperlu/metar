@@ -16,8 +16,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-
-	// "jeanluc/metarDEV/data"
 	"math"
 	"net/http"
 	"net/url"
@@ -36,7 +34,7 @@ const (
 	urlTAFfmt   = URLfmt + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
-	ver         = "2.4.1"
+	ver         = "2.4.2"
 )
 
 // Initialize and parse flags
@@ -224,6 +222,7 @@ func main() {
 
 	// get METARs routine (arg[4]--> 2 METARs per hour + 30 minutes)
 	urlM := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlag)/2+0.5)
+	// urlM = "http://gaubert/metar/metar.php?type=mo"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -232,6 +231,7 @@ func main() {
 
 	// get TAFS routine
 	urlT := fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
+	// urlT = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -407,7 +407,7 @@ func searchAirport(icao2airportInfos map[string]string, countryCodes string) str
 		}
 	}
 	if list == "" {
-		return fmt.Sprintf("  Nothing found for: '%s'\n", countryCodes)
+		return fmt.Sprintf("  No METAR station found for: '%s'\n", countryCodes)
 	}
 	return list
 }
@@ -444,7 +444,13 @@ func listAirports(countryCodes []string, code2country map[string][]string) strin
 		for _, line := range data.AdList {
 			splitLine := strings.Split(line, ";")
 			if code == splitLine[3] {
-				countryAdList += fmt.Sprintf("  %s %-3s %s %s\n", splitLine[0], splitLine[1], splitLine[3], splitLine[2])
+				countryAdList += fmt.Sprintf(
+					"  %s %-3s %s %s\n",
+					splitLine[0],
+					splitLine[1],
+					splitLine[3],
+					splitLine[2],
+				)
 			}
 		}
 		if countryAdList != "" {
@@ -452,7 +458,7 @@ func listAirports(countryCodes []string, code2country map[string][]string) strin
 		}
 	}
 	if list == "" {
-		return "  Nothing found.\n"
+		return "  No METAR station found.\n"
 	}
 	return list
 

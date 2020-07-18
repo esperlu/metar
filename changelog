@@ -1,5 +1,8 @@
+2020-07-18 (v2.4.2)
+* add station coordinates to ad_list
+
 2020-07-08 (v2.4.1)
-* added all wheather stations listed by NOAA.
+* updated airport list by removing the non-METAR stations from the list (source NOAA)
 
 2020-07-06 (v2.4)
 * added -m and -f options (METAR or TAF only)
