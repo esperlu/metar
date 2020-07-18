@@ -1,3 +1,6 @@
+2020-07-18 (v2.4.2)
+* add station coordinates to ad_list
+
 2020-07-08 (v2.4.1)
 * updated airport list by removing the non-METAR stations from the list (source NOAA)
 
