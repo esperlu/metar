@@ -36,7 +36,7 @@ const (
 	urlTAFfmt   = URLfmt + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
-	ver         = "2.4.1"
+	ver         = "2.4.2"
 )
 
 // Initialize and parse flags
@@ -285,7 +285,7 @@ func main() {
 					fmt.Printf("%s\n", vv)
 				}
 			} else {
-				fmt.Println("No METAR received for this station")
+				fmt.Println("No METAR received from this station")
 			}
 		}
 
@@ -294,7 +294,7 @@ func main() {
 			if len(tafs[v]) != 0 {
 				fmt.Printf("%s\n", tafs[v][0])
 			} else {
-				fmt.Println("No TAF received for this station")
+				fmt.Println("No TAF received from this station")
 			}
 		}
 	}
@@ -302,7 +302,7 @@ func main() {
 	// print timing (not for raw output)
 	if !*rawFlag {
 		totalTime := time.Since(startTotal).Seconds()
-		fmt.Printf("\n%s | Download: %.3f sec. | Process: %.3f sec. | Total: %.3f sec.\n",
+		fmt.Printf("\nv%s | Download: %.3f sec. | Process: %.3f sec. | Total: %.3f sec.\n",
 			ver,
 			downloadTime,
 			totalTime-downloadTime,

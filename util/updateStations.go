@@ -30,14 +30,9 @@ type station struct {
 }
 
 const (
-	dataFile string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
-	noaaURL  string = "http://gaubert/metar/stations.txt"
-	// noaaURL        string = "http://regains.be/metar/stations.txt"
-	ourairportsURL string = "http://gaubert/metar/airports.csv"
-
-	// dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
-	// noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
-	// ourairportsURL string = "https://ourairports.com/data/airports.csv"
+	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metarDEV/data/ad_list.go"
+	noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
+	ourairportsURL string = "https://ourairports.com/data/airports.csv"
 )
 
 func main() {
@@ -167,7 +162,6 @@ func main() {
 	// store all records in file (option: add lat-long)
 	for _, v := range final {
 		if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s;%.3f;%.3f\",\n", v.icao, v.iata, v.name, v.country, v.lat, v.long)); err != nil {
-			// if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s\",\n", v.icao, v.iata, v.name, v.country)); err != nil {
 			log.Fatal(err)
 		}
 	}
