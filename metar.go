@@ -39,7 +39,7 @@ const (
 
 // Initialize and parse flags
 var (
-	numberMetarFlag   = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 30.")
+	numberMetarFlag   = flag.Int("n", 4, "Set number of Metars to print per station. N 1 to 70.")
 	searchFlag        = flag.Bool("s", false, "Search IATA/ICAO code for an airport")
 	listCountriesFlag = flag.Bool("lc", false, "List all countries with ISO code")
 	listAirportsFlag  = flag.Bool("la", false, "List all for one country (ISO code)")
