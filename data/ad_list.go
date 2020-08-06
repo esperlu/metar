@@ -57,10 +57,11 @@ EXAMPLES:
     GitHub: https://github.com/esperlu/metar
 
   Credit:
-    Go language: Google (Robert Griesemer, Rob Pike, Ken Thomson) and many other contributors.
-    Weather data: NOAAA's aviationweather.gov
+	Weather data: NOAA's aviationweather.gov
+	Station data: ourairports.com and NOAA
 
-` + string(0xA9) + " Jean-Luc Lacroix 2016-2020\n"
+  (c) Jean-Luc Lacroix 2016-2020
+`
 
 // ContinentList Continent List
 var ContinentList = []string{
