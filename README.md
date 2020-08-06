@@ -20,7 +20,7 @@ As an addition to the METAR messages, Wind Chill factor, Heat Factor and Relativ
 
 ## Retrieve messages for a list of stations (IATA or ICAO codes)
 
-```$ metar lhr jfk BRU uudd``` (Case insensitive)
+```$ metar cdg FACT``` (Case insensitive)
 
 The output looks like this:
 
