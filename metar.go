@@ -34,7 +34,7 @@ const (
 	urlTAFfmt   = URLfmt + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
-	ver         = "2.4.2"
+	ver         = "2.4.3"
 )
 
 // Initialize and parse flags
