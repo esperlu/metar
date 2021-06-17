@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/esperlu/metar/data"
+	"./data"
 )
 
 // Constants to fetch Weather reports from aviationweather.com
