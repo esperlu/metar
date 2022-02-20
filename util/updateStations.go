@@ -97,6 +97,7 @@ func main() {
 		for _, l := range lines[1:] {
 			// remove possible remaining `"` in airport name
 			l[3] = strings.ReplaceAll(l[3], "\"", "")
+			l[3] = strings.ReplaceAll(l[3], "\\", "/")
 			// parse and conv coord. 999.0 if err
 			lt, errLt := strconv.ParseFloat(l[4], 64)
 			lg, errLg := strconv.ParseFloat(l[5], 64)
@@ -105,6 +106,8 @@ func main() {
 			}
 			// if `municipality` not empty
 			if l[10] != "" {
+				l[10] = strings.ReplaceAll(l[10], "\"", "")
+				l[10] = strings.ReplaceAll(l[10], "\\", "/")
 				l[10] = " (" + l[10] + ")"
 			}
 			stationsLIST[l[1]] = station{
