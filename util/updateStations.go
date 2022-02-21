@@ -30,6 +30,7 @@ type station struct {
 }
 
 const (
+	// Change dataFile path to where this ad_list.go lives
 	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metar/data/ad_list.go"
 	noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
 	ourairportsURL string = "https://ourairports.com/data/airports.csv"
@@ -124,7 +125,7 @@ func main() {
 	// wait for all go routines to finish
 	wg.Wait()
 
-	// print stations from NOAA with details taken in LIST if exists (else use NOAA names and codes)
+	// print ICAO codes from NOAA with details taken in LIST only if exists in LIST
 	var final []station
 	for _, vNOAA := range stationsNOAA {
 		if vLIST, ok := stationsLIST[vNOAA.icao]; ok {
@@ -134,8 +135,6 @@ func main() {
 				vLIST.long = vNOAA.long
 			}
 			final = append(final, vLIST)
-		} else {
-			final = append(final, vNOAA)
 		}
 	}
 
