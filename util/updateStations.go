@@ -126,6 +126,7 @@ func main() {
 	wg.Wait()
 
 	// print ICAO codes from NOAA with details taken in LIST only if exists in LIST
+	// (some ICAO codes in NOAA are incorrect)
 	var final []station
 	for _, vNOAA := range stationsNOAA {
 		if vLIST, ok := stationsLIST[vNOAA.icao]; ok {

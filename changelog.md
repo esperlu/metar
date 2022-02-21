@@ -1,5 +1,5 @@
-### 2022-02-21 (v.2.4.3)
-* Updated airport list
+### 2022-02-21 (v.2.4.4)
+* Updated airport list due to incorrect ICAO codes in the NOAA list.
 
 ### 2020-07-18 (v2.4.2)
 * add station coordinates to ad_list
