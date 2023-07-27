@@ -188,7 +188,7 @@ func main() {
 	var stations []string
 	for _, v := range flag.Args() {
 		v = strings.ToUpper(v)
-		fmtNotFound := "\n  \"%s\" not a METAR station . Try to run: metar -s %[1]s\n"
+		fmtNotFound := "\n  \"%s\" not a METAR station. Try to run: metar -s %[1]s\n"
 
 		switch len(v) {
 		// if IATA airport code (3 char.), lookup the iata2icao map
