@@ -2,12 +2,18 @@
 
 // Usage:
 // Retrieve messages for a list of stations (IATA or ICAO codes):
-// 		$ metar lhr jfk bru uudd
+//
+//	$ metar lhr jfk bru uudd
+//
 // Find the IATA/ICAO airport code for an airport
-// 		$ metar -s munich
-// 		$ metar -s new york
+//
+//	$ metar -s munich
+//	$ metar -s new york
+//
 // Help screen for other options:
-// 		$ metar -h
+//
+//	$ metar -h
+//
 // Bug reports:
 // https://github.com/esperlu/metar/issues
 package main
@@ -182,7 +188,7 @@ func main() {
 	var stations []string
 	for _, v := range flag.Args() {
 		v = strings.ToUpper(v)
-		fmtNotFound := "\n  \"%s\" not found. Try to run: metar -s %[1]s\n"
+		fmtNotFound := "\n  \"%s\" not a METAR station . Try to run: metar -s %[1]s\n"
 
 		switch len(v) {
 		// if IATA airport code (3 char.), lookup the iata2icao map
