@@ -1,3 +1,6 @@
+### 2023-07-28 (v2.4.5)
+* Corrected typo in warning for non METAR stations
+
 ### 2022-02-21 (v.2.4.4)
 * Updated airport list due to incorrect ICAO codes in the NOAA list.
 
