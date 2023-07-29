@@ -40,7 +40,7 @@ const (
 	urlTAFfmt   = URLfmt + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
-	ver         = "2.4.4"
+	ver         = "2.4.5"
 )
 
 // Initialize and parse flags
@@ -157,14 +157,14 @@ func main() {
 	// search option -s
 	if *searchFlag {
 		fmt.Printf("\n%s\n", searchAirport(icao2airportInfos, strings.Join(flag.Args(), " ")))
-		fmt.Printf("  Processed in %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
+		fmt.Printf("  Processed in %.1f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
 
 	// List country ISO codes
 	if *listCountriesFlag {
 		fmt.Printf("\n%s\n", listCountries(strings.Join(flag.Args(), " ")))
-		fmt.Printf("  Processed in %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
+		fmt.Printf("  Processed in %.1f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
 
@@ -180,7 +180,7 @@ func main() {
 			return
 		}
 		fmt.Printf("\n%s\n", listAirports(flag.Args(), code2country))
-		fmt.Printf("  Processed in %.3f ms.\n\n", time.Since(startTotal).Seconds()*1000)
+		fmt.Printf("  Processed in %.1f ms.\n\n", time.Since(startTotal).Seconds()*1000)
 		return
 	}
 
