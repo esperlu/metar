@@ -90,7 +90,6 @@ If you do not want to compile it yourself, you can skip the steps below and down
     `go build metar.go`
     * To compile the binary and install it in the binary folder defined in the `GOBIN` environment variable, run the following command:  
     `go install metar.go`  
-
     This will make the binary accessible and executable system wide.
 
 ## Utilities
