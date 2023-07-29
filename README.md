@@ -80,7 +80,7 @@ If you do not want to compile it yourself, you can skip the steps below and down
 
 ### Get this metar repo
 
-1. Run the following command to install the metar repo in the directory defined in your GOPATH environment variable:  
+1. Run the following command to install the metar repo in the directory defined in your `GOPATH` environment variable:  
 `go get github.com/esperlu/metar` 
 2. Navigate to the now local sources: `<GOPATH>/src/github.com/esperlu/metar`
 3. Give it a try: run the following command to get the METAR weather reports for Brussels BRU (BE) and New York JFK (US):  
@@ -89,7 +89,8 @@ If you do not want to compile it yourself, you can skip the steps below and down
     * To compile the binary and save it in the current directory, run the following command:  
     `go build metar.go`
     * To compile the binary and install it in the binary folder defined in the `GOBIN` environment variable, run the following command:  
-    `go install metar.go`.  
+    `go install metar.go`  
+
     This will make the binary accessible and executable system wide.
 
 ## Utilities
