@@ -1,4 +1,4 @@
-// metar is a go program to fetch the aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
+// metar is a go program to retrieve aviation METAR's and TAF's for a given list of airports in console (terminal) mode.
 
 // Usage:
 // Retrieve messages for a list of stations (IATA or ICAO codes):
