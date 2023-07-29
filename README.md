@@ -1,6 +1,6 @@
 # metar
 
-This go program is a console (terminal) mode program to fetch the aviation METAR's and TAF's for a given list of airports and other weather stations. Special care has been put into execution speed using the goroutines for concurrent data retrieval of METAR's and TAF's.
+This go program is a console (terminal) mode program to retrieve the aviation METAR's and TAF's for a given list of airports and other weather stations. Special care has been put into execution speed using the goroutines for concurrent data retrieval of METAR's and TAF's.
 
 As an addition to the METAR messages, Wind Chill factor, Heat Factor and Relative Humidity are computed when applicable.
 
@@ -102,14 +102,14 @@ Windows 64-bit| amd64 | [download](https://github.com/esperlu/metarBin/blob/mast
 
 Once downloaded **Linux and Mac** users will have to make that file executable: `$ chmod +x metar`
 
-To run it (Linux and Mac): `$ ./metar`
-
 ## Bug report
 Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/issues) any bugs.
 
 ## Credits
 METAR weather messages are retrieved from NOAA's aviationweather.gov in real time.
-METAR station list and names are compiled from and aviationweather.gov and ourairports.com
+METAR stations list and names are compiled from :
+* [aviationweather.gov](https://www.aviationweather.gov/docs/metar/stations.txt)
+* [ourairports.com](https://ourairports.com/data/airports.csv)
 
 ---
 #### (c) Jean-Luc Lacroix
