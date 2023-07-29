@@ -1,8 +1,8 @@
 # metar
 
-This go program is a console (terminal) mode program to retrieve the aviation METAR's and TAF's for a given list of airports and other weather stations. Special care has been put into execution speed using the goroutines for concurrent data retrieval of METAR's and TAF's.
+This Go program is a console (terminal) mode program that retrieves aviation METARs and TAFs for a given list of airports and other weather stations. Special care has been taken to optimize execution speed by using goroutines for concurrent data retrieval of METARs and TAFs.
 
-As an addition to the METAR messages, Wind Chill factor, Heat Factor and Relative Humidity are computed when applicable.
+In addition to the METAR messages, wind chill factor, heat index, and relative humidity are computed when applicable.
 
 ## Options
 
@@ -69,9 +69,9 @@ $ metar -la it pt es uk
 
 ## Installation
 
-You will have to compile the sources using the golang tools. Follow this [howto](https://golang.org/doc/code.html) to get you started. The compilation is lightning fast and the [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) easy.
+You will need to compile the sources using the Golang tools. Follow this [howto](https://go.dev/doc/tutorial/compile-install) to get started. The compilation is lightning fast and [cross-compilation](http://dave.cheney.net/2015/08/22/cross-compilation-with-go-1-5) is easy.
 
-If you don't want to compile it yourself, skip the points below and go the [binaries](#binaries)
+If you do not want to compile it yourself, you can skip the steps below and download the [binaries](#binaries)
 
 ### Install the latest Go for your plateform
 
@@ -80,11 +80,21 @@ If you don't want to compile it yourself, skip the points below and go the [bina
 
 ### Get this metar repo
 
-1. `go get github.com/esperlu/metar` This will install this git repo in the directory defined in your `GOPATH` environment variable.
-2. navigate to the now local sources `<GOPATH>/src/github.com/esperlu/metar`
-3. give it a try: `go run metar.go bru jfk`
-4. if successfull, compile the metar sources and data: `go build metar.go` or `go install metar.go` to install the binary in the binary folder defined in the `GOBIN` environment variable to make it accessible and executable system wide.
+1. Run the following command to install the metar repo in the directory defined in your GOPATH environment variable:  
+`go get github.com/esperlu/metar` 
+2. Navigate to the now local sources: `<GOPATH>/src/github.com/esperlu/metar`
+3. Give it a try: run the following command to get the METAR weather reports for Brussels BRU (BE) and New York JFK (US):  
+`go run metar.go bru jfk`
+4. If successfull, compile the metar sources and data:
+    * To compile the binary and save it in the current directory, run the following command:  
+    `go build metar.go`
+    * To compile the binary and install it in the binary folder defined in the `GOBIN` environment variable, run the following command:  
+    `go install metar.go`.  
+    This will make the binary accessible and executable system wide.
 
+## Utilities
+
+The airport list and METAR stations list are hardcoded for the sake of speed. However, these lists are subject to change. To update the lists, run the `updateStations.go` program in the `util` directory. Then recompile the main program `metar.go` to hardcode the updated lists.
 
 ## Binaries
 
