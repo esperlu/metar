@@ -96,21 +96,6 @@ If you do not want to compile it yourself, you can skip the steps below and down
 
 The airport list and METAR stations list are hardcoded for the sake of speed. However, these lists are subject to change. To update the lists, run the `updateStations.go` program in the `util` directory. Then recompile the main program `metar.go` to hardcode the updated lists.
 
-## Binaries
-
-You can also use the [binaries](https://github.com/esperlu/metarBin) that I have cross-compiled for your convenience.
-
-OS | Architecture | Direct link
------------- | ----------- | -------------
-Linux 64 bit| amd64 | [download](https://github.com/esperlu/metarBin/blob/master/linux/amd64/metar?raw=true)
-Linux | arm v5 | [download](https://github.com/esperlu/metarBin/blob/master/linux/arm5/metar?raw=true)
-Linux RPi-1 (Zero, A, A+, B, B+) 32-bit| arm v6 | [download](https://github.com/esperlu/metarBin/blob/master/linux/arm6/metar?raw=true)
-Linux RPi-2B 32-bit | arm v7 | [download](https://github.com/esperlu/metarBin/blob/master/linux/arm7/metar?raw=true)
-Darwin (OS X) | amd64 | [download](https://github.com/esperlu/metarBin/blob/master/darwin/amd64/metar?raw=true)
-Windows 32-bit| 386 | [download](https://github.com/esperlu/metarBin/blob/master/windows/386/metar.exe?raw=true)
-Windows 64-bit| amd64 | [download](https://github.com/esperlu/metarBin/blob/master/windows/amd64/metar.exe?raw=true)
-
-Once downloaded **Linux and Mac** users will have to make that file executable: `$ chmod +x metar`
 
 ## Bug report
 Rough edges are not excluded. Please [report](https://github.com/esperlu/metar/issues) any bugs.
