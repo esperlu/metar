@@ -33,14 +33,15 @@ import (
 	"github.com/esperlu/metar/data"
 )
 
-// Constants to fetch Weather reports from aviationweather.com
+// Constants to fetch Weather reports from aviationweather.com's new API
+// https://aviationweather.gov/data/api/#/Dataserver/dataserverMetars
 const (
-	URLfmt      = "http://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=%s&requestType=retrieve&format=csv&stationString=%s"
+	URLfmt      = "https://aviationweather.gov/cgi-bin/data/dataserver.php?requestType=retrieve&dataSource=%s&format=csv&stationString=%s"
 	urlMETARfmt = URLfmt + "&hoursBeforeNow=%.1f"
 	urlTAFfmt   = URLfmt + "&hoursBeforeNow=%.1f&mostRecentForEachStation=true&Fields=raw_text"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
-	ver         = "2.4.5.1"
+	ver         = "2.4.5.2"
 )
 
 // Initialize and parse flags
@@ -115,17 +116,12 @@ func main() {
 	}
 
 	// Build key-values tables
-	// Table map[countryCode] -> []string{Country name, continent code}
 	code2country := make(map[string][]string)
 	for _, line := range data.CountryList {
 		lineSplit := strings.Split(line, ";")
 		code2country[lineSplit[1]] = []string{lineSplit[0], lineSplit[2]}
 
 	}
-	// for k, v := range code2country {
-	// 	fmt.Printf("[%s] %s\n", k, v)
-	// }
-	// return
 
 	// Table map[iata]=>(icao) and map[icao]=>(airport)+(details)
 	iata2icao := make(map[string]string)
@@ -148,11 +144,6 @@ func main() {
 			code2country[lineSplit[3]][1],
 		)
 	}
-
-	// for k, v := range icao2airportInfos {
-	// 	fmt.Printf("[%s] %s\n", k, v)
-	// }
-	// return
 
 	// search option -s
 	if *searchFlag {
@@ -217,7 +208,7 @@ func main() {
 	}
 
 	// prepare the station list string for the URL
-	stationList := strings.Join(stations, "%20")
+	stationList := strings.Join(stations, ",")
 
 	// Start download timer
 	startDownload := time.Now()
@@ -228,7 +219,7 @@ func main() {
 
 	// get METARs routine (arg[4]--> 2 METARs per hour + 30 minutes)
 	urlM := fmt.Sprintf(urlMETARfmt, "metars", stationList, float32(*numberMetarFlag)/2+0.5)
-	// urlM = "http://gaubert/metar/metar.php?type=mo"
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -237,7 +228,6 @@ func main() {
 
 	// get TAFS routine
 	urlT := fmt.Sprintf(urlTAFfmt, "tafs", stationList, 0.3)
-	// urlT = "http://gaubert/metar/metar.php?type=to"
 	wg.Add(1)
 	go func() {
 		defer wg.Done()

@@ -1,3 +1,6 @@
+### 2023-10-18 (v2.4.5.2)
+* Solved the "Page Not Found" error message due to the changes in the aviationwheather.gov new API
+
 ### 2023-07-28 (v2.4.5)
 * Corrected typo in warning for non METAR stations
 
