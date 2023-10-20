@@ -9,9 +9,11 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"compress/gzip"
 	"encoding/csv"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -30,9 +32,9 @@ type station struct {
 }
 
 const (
-	// Change dataFile path to where this ad_list.go lives
+	// CAUTION ! Change dataFile path to where this ad_list.go lives
 	dataFile       string = "/home/jeanluc/golang/src/jeanluc/metar/data/ad_list.go"
-	noaaURL        string = "https://www.aviationweather.gov/docs/metar/stations.txt"
+	noaaURL        string = "https://aviationweather.gov/data/cache/metars.cache.csv.gz"
 	ourairportsURL string = "https://ourairports.com/data/airports.csv"
 )
 
@@ -44,36 +46,43 @@ func main() {
 
 	start := time.Now()
 
-	// Get and process NOAA file
+	// Get and process NOAA gziped file
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
+		// get noaa station list (gz file)
 		s, err := wget(noaaURL, 5)
 		if err != nil {
-			log.Fatal(httpError(err))
+			log.Fatalf("\nError getting %s\n  %s\n\n", noaaURL, err)
 		}
 
-		lines := strings.Split(s, "\n")
-		// Traverse lines
-		for _, l := range lines {
-			// Skip titles, non METAR stations and stations w/o icao code
-			if len(l) != 83 || string(l[62]) != "X" || strings.TrimSpace(l[20:24]) == "" {
-				continue
-			}
-			// convert degree/min to dec (999.0 if err)
-			lt, lg := deg2dec(l[39:46], l[47:55])
-			// Store station ident in map[icao]station
-			// Note: iata code is in fact the FAA code. Not usable.
-			stationsNOAA[strings.TrimSpace(l[20:24])] = station{
-				name:    strings.TrimSpace(l[3:20]),
-				icao:    strings.TrimSpace(l[20:24]),
-				country: l[81:83],
-				lat:     lt,
-				long:    lg,
-			}
+		// decompress gz file
+		s, err = gunzipGz(s)
+		if err != nil {
+			log.Fatalf("\nError decompressing data from %s\n  %s\n", noaaURL, err)
 		}
-		if len(stationsNOAA) == 0 {
-			log.Fatalf("\n\n %s file not valid.\n No valid record found.\n\n", noaaURL)
+
+		// make a new reader from string `s`
+		r := csv.NewReader(strings.NewReader(s))
+		r.LazyQuotes = true
+		r.FieldsPerRecord = -1
+
+		// get all records
+		records, err := r.ReadAll()
+		if err != nil {
+			log.Fatalf("\nError reading records from %s\n  %s\n", noaaURL, err)
+		}
+
+		// Process noaa file skipping first 6 lines of file
+		for _, l := range records[6:] {
+			lt, _ := strconv.ParseFloat(l[3], 64)
+			lg, _ := strconv.ParseFloat(l[4], 64)
+			stationsNOAA[l[1]] = station{
+				icao: l[1],
+				lat:  lt,
+				long: lg,
+			}
 		}
 	}()
 
@@ -83,23 +92,28 @@ func main() {
 		defer wg.Done()
 		s, err := wget(ourairportsURL, 5)
 		if err != nil {
-			log.Fatal(httpError(err))
+			log.Fatalf("\nError getting %s\n  %s\n\n", ourairportsURL, err)
 		}
 
 		// make a new reader from string `s`
 		r := csv.NewReader(strings.NewReader(s))
+
 		// required number of fields
 		r.FieldsPerRecord = 18
+
 		// parse all csv lines
 		lines, err := r.ReadAll()
 		if err != nil {
-			log.Fatalf("\n\n %s file not valid. Expecting 18 fields\n %v\n\n", ourairportsURL, err)
+			log.Fatalf("\n%s file not valid. Expecting 18 fields\n %v\n\n", ourairportsURL, err)
 		}
+
+		// Process parsed ourairport records
 		for _, l := range lines[1:] {
 			// remove possible remaining `"` in airport name
 			l[3] = strings.ReplaceAll(l[3], "\"", "")
 			l[3] = strings.ReplaceAll(l[3], "\\", "/")
-			// parse and conv coord. 999.0 if err
+
+			// parse and conv coord. set lat and long to 999.0 if err
 			lt, errLt := strconv.ParseFloat(l[4], 64)
 			lg, errLg := strconv.ParseFloat(l[5], 64)
 			if errLt != nil || errLg != nil {
@@ -109,7 +123,7 @@ func main() {
 			if l[10] != "" {
 				l[10] = strings.ReplaceAll(l[10], "\"", "")
 				l[10] = strings.ReplaceAll(l[10], "\\", "/")
-				l[10] = " (" + l[10] + ")"
+				l[10] = fmt.Sprintf(" (%s)", l[10])
 			}
 			stationsLIST[l[1]] = station{
 				name:    l[3] + l[10],
@@ -125,7 +139,7 @@ func main() {
 	// wait for all go routines to finish
 	wg.Wait()
 
-	// print ICAO codes from NOAA with details taken in LIST only if exists in LIST
+	// print ICAO codes from stationsNOAA with details taken in LIST only if exists in stationsLIST
 	// (some ICAO codes in NOAA are incorrect)
 	var final []station
 	for _, vNOAA := range stationsNOAA {
@@ -145,7 +159,7 @@ func main() {
 	// Add `final` to data file `ad_list.go`
 	f, err := os.OpenFile(dataFile, os.O_APPEND|os.O_RDWR, 0644)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("\nError laoding %s\n %s", dataFile, err)
 	}
 	defer f.Close()
 
@@ -160,15 +174,20 @@ func main() {
 			break
 		}
 	}
-	f.Truncate(int64(bytesRead))
+
+	err = f.Truncate(int64(bytesRead))
+	if err != nil {
+		log.Fatalf("Error truncating file %s\n %s\n\n", dataFile, err)
+	}
 
 	// store all records in file (option: add lat-long)
 	for _, v := range final {
 		if _, err := f.WriteString(fmt.Sprintf("\t\"%s;%s;%s;%s;%.3f;%.3f\",\n", v.icao, v.iata, v.name, v.country, v.lat, v.long)); err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error writing records into %s\n %s\n\n", dataFile, err)
 		}
 	}
 	if _, err := f.WriteString("}\n"); err != nil {
+		log.Fatalf("Error writing final '}\n' into %s\n %s\n\n", dataFile, err)
 		log.Fatal(err)
 	}
 
@@ -209,7 +228,7 @@ func wget(urlString string, wgetTimeout int) (string, error) {
 	}
 
 	// return res.Body, nil
-	wgetAnswer, err := ioutil.ReadAll(res.Body)
+	wgetAnswer, err := io.ReadAll(res.Body)
 	if err != nil {
 		err := new(url.Error)
 		*err = url.Error{
@@ -217,7 +236,6 @@ func wget(urlString string, wgetTimeout int) (string, error) {
 			URL: urlString,
 			Err: fmt.Errorf("Error reading response body"),
 		}
-
 	}
 
 	// return output (after removing trailing \n)
@@ -233,25 +251,21 @@ func httpError(err error) string {
 	)
 }
 
-// deg2dec convert degree/min string coord. `61 10N  150 30W` ---> dec: `61.17 -150.50`
-// return 999.0 if err
-func deg2dec(lat, long string) (lt, lg float64) {
-	latd, err := strconv.ParseFloat(lat[:2], 64)
-	latm, err := strconv.ParseFloat(lat[3:5], 64)
-	longd, err := strconv.ParseFloat(long[:3], 64)
-	longm, err := strconv.ParseFloat(long[4:6], 64)
+// uncompress gziped string
+// return guziped string and error
+func gunzipGz(gzString string) (string, error) {
+
+	reader := bytes.NewReader([]byte(gzString))
+	gzReader, err := gzip.NewReader(reader)
 	if err != nil {
-		return 999.0, 999.0
+		return "", err
 	}
 
-	lt = latd + latm/60
-	lg = longd + longm/60
+	// err != io.ErrUnexpectedEOF to get rid of the "unexpected EOF" normal error
+	output, err := io.ReadAll(gzReader)
+	if err != nil && err != io.ErrUnexpectedEOF {
+		return "", err
+	}
 
-	if string(lat[5]) == "S" {
-		lt *= -1
-	}
-	if string(long[6]) == "W" {
-		lg *= -1
-	}
-	return lt, lg
+	return string(output), nil
 }
