@@ -1,3 +1,7 @@
+### 2025-10-27 (v2.5.0)
+* Fixed the "Page Not Found" error caused by changes in the new AviationWeather.gov API.
+* The new API discontinued support for the CSV file format — switched to JSON and refactored the code accordingly.
+
 ### 2023-10-18 (v2.4.5.2)
 * Solved the "Page Not Found" error message due to the changes in the aviationwheather.gov new API
 
