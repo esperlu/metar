@@ -337,17 +337,40 @@ func wget(urlString string, wgetTimeout int) ([]byte, error) {
 	}
 	defer res.Body.Close()
 
-	// if not HTTP 200 OK in response header
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("page not found")
+	// Check HTTP status code
+	httpErr := statusMessage(res.StatusCode)
+	if httpErr != nil {
+		return nil, httpErr
 	}
 
+	// Read body
 	wgetAnswer, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	return wgetAnswer, nil
+}
+
+// statusMessage returns a message based on HTTP status code
+func statusMessage(statusCode int) error {
+	switch statusCode {
+	case http.StatusOK: // 200
+		return nil
+	case http.StatusCreated: // 201
+		return fmt.Errorf("resource created successfully (status %d)", statusCode)
+	case http.StatusAccepted: // 202
+		return fmt.Errorf("request accepted for processing (status %d)", statusCode)
+	case http.StatusNoContent: // 204
+		return fmt.Errorf("no content returned for given station(s) (status %d)", statusCode)
+	case http.StatusPartialContent: // 206
+		return fmt.Errorf("partial content returned (status %d)", statusCode)
+	default:
+		if statusCode >= 200 && statusCode < 300 {
+			return fmt.Errorf("successful response but unhandled status code: %d", statusCode)
+		}
+		return fmt.Errorf("unexpected status code: %d", statusCode)
+	}
 }
 
 // checkWgetErr check connection error sent by wget
@@ -405,69 +428,101 @@ func computeFactors(wind float64, temp float64, dew float64) (float64, float64, 
 
 }
 
-// searchAirport searches airport in airport data list
-func searchAirport(icao2airportInfos map[string]string, countryCodes string) string {
-	var list string
-	countryCodes = strings.ToUpper(countryCodes)
-	for _, line := range icao2airportInfos {
-		if strings.Contains(strings.ToUpper(line), countryCodes) {
-			list += fmt.Sprintf("  %s\n", line)
+// searchAirport searches for airports in the airport data map
+func searchAirport(icao2airportInfos map[string]string, query string) string {
+	var sb strings.Builder
+	query = strings.ToUpper(query)
+
+	for _, info := range icao2airportInfos {
+		if strings.Contains(strings.ToUpper(info), query) {
+			sb.WriteString(fmt.Sprintf("  %s\n", info))
 		}
 	}
-	if list == "" {
-		return fmt.Sprintf("  No METAR station found for: '%s'\n", countryCodes)
+
+	if sb.Len() == 0 {
+		return fmt.Sprintf("  No METAR station found for: '%s'\n", query)
 	}
-	return list
+
+	return sb.String()
 }
 
-// listCountries List all countries and ISO code
-func listCountries(countryCodes string) string {
-	var list string
-	countryCodes = strings.ToUpper(countryCodes)
+// listCountries lists all countries and ISO codes that match the search string
+// Using strings.Builder for better performance
+func listCountries(search string) string {
+	var sb strings.Builder
+	search = strings.ToUpper(search)
+
 	for _, line := range data.CountryList {
-		if strings.Contains(strings.ToUpper(line), countryCodes) {
+		if strings.Contains(strings.ToUpper(line), search) {
 			splitLine := strings.Split(line, ";")
-			list += fmt.Sprintf("  %s %s (%s)\n", splitLine[1], splitLine[0], splitLine[2])
+			if len(splitLine) < 3 {
+				continue // skip invalid lines
+			}
+			sb.WriteString(fmt.Sprintf(
+				"  %s %s (%s)\n",
+				splitLine[1], // country name
+				splitLine[0], // country code
+				splitLine[2], // ISO code or additional info
+			))
 		}
 	}
-	if list == "" {
-		return "  " + countryCodes + ": Nothing found in country list.\n"
+
+	if sb.Len() == 0 {
+		return fmt.Sprintf("  %s: Nothing found in country list.\n", search)
 	}
-	return list
+
+	return sb.String()
 }
 
-// listAirports list all airports for one or more countries (ISO country code)
+// listAirports lists all airports for one or more countries (ISO country code)
+// Using strings.Builder for better performance
 func listAirports(countryCodes []string, code2country map[string][]string) string {
-	var list string
+	var sb strings.Builder
+
 	for _, code := range countryCodes {
 		code = strings.ToUpper(code)
+
 		// Check if country code exists
-		if _, ok := code2country[code]; !ok {
-			return fmt.Sprintf("\n  Unkown country code: %s.\n  Use option -lc [search text] to list county codes.\n", code)
+		countryInfo, ok := code2country[code]
+		if !ok {
+			return fmt.Sprintf(
+				"\n  Unknown country code: %s.\n  Use option -lc [search text] to list country codes.\n",
+				code,
+			)
 		}
+
 		// Country title line
-		header := fmt.Sprintf("\n  %s (%s)\n", code2country[code][0], code2country[code][1])
-		countryAdList := ""
+		header := fmt.Sprintf("\n  %s (%s)\n", countryInfo[0], countryInfo[1])
+		var countryAdList strings.Builder
+
 		// Loop through all airports for that country code
+		airportCount := 0
 		for _, line := range data.AdList {
 			splitLine := strings.Split(line, ";")
+			if len(splitLine) < 4 {
+				continue // skip invalid lines
+			}
 			if code == splitLine[3] {
-				countryAdList += fmt.Sprintf(
+				countryAdList.WriteString(fmt.Sprintf(
 					"  %s %-3s %s %s\n",
 					splitLine[0],
 					splitLine[1],
 					splitLine[3],
 					splitLine[2],
-				)
+				))
+				airportCount++
 			}
 		}
-		if countryAdList != "" {
-			list += header + countryAdList
+		// If at least one airport found, write to main string builder
+		if airportCount > 0 {
+			sb.WriteString(header)
+			sb.WriteString(countryAdList.String())
+			sb.WriteString(fmt.Sprintf("\n  %d airports found", airportCount))
+		}
+		if airportCount == 0 {
+			return "  No airport found.\n"
 		}
 	}
-	if list == "" {
-		return "  No METAR station found.\n"
-	}
-	return list
 
+	return sb.String()
 }
