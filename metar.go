@@ -36,7 +36,7 @@ import (
 // Constants to fetch Weather reports from aviationweather.com's new API
 const (
 	URLfmt      = "https://aviationweather.gov/api/data/%s?ids=%s&format=json&taf=true"
-	urlMETARfmt = URLfmt + "&hours=%.1f"
+	urlMETARfmt = URLfmt + "&hours=%d"
 	maxNbMETAR  = 70
 	maxTIMEOUT  = 10
 	ver         = "2.5.0"
@@ -261,7 +261,8 @@ func main() {
 	var metarResponse []byte
 
 	// // get METARs routine (arg[4]--> 2 METARs per hour + 30 minutes)
-	urlMETAR := fmt.Sprintf(urlMETARfmt, "metar", stationList, float32(*numberMetarFlag)/2+0.5)
+	hours := (*numberMetarFlag + 2) / 2
+	urlMETAR := fmt.Sprintf(urlMETARfmt, "metar", stationList, hours)
 
 	var errM error
 	metarResponse, errM = wget(urlMETAR, *timeoutFlag)

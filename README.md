@@ -129,7 +129,7 @@ Rough edges are not excluded. Please [report any bugs](https://github.com/esperl
 
 METAR weather messages are retrieved from NOAA's aviationweather.gov in real time.
 METAR stations list and names are compiled from:
-* [aviationweather.gov](https://www.aviationweather.gov/docs/metar/stations.txt)
+* [aviationweather.gov](https://aviationweather.gov/data/cache/metars.cache.csv.gz)
 * [ourairports.com](https://ourairports.com/data/airports.csv)
 
 ----
